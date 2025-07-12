@@ -220,9 +220,13 @@ def delete_job(job_id):
 @main_bp.route('/job/<job_id>/files/<path:filename>')
 @login_required
 def get_job_file(job_id, filename):
+    """Return a file from a job's output or input directory."""
     job_output = os.path.join(JOB_DIR, job_id, 'output')
+    job_input = os.path.join(JOB_DIR, job_id, 'input')
     if os.path.isfile(os.path.join(job_output, filename)):
         return send_from_directory(job_output, filename, as_attachment=True)
+    if os.path.isfile(os.path.join(job_input, filename)):
+        return send_from_directory(job_input, filename, as_attachment=True)
     return 'File not found', 404
 
 
@@ -283,6 +287,24 @@ def run_step(flow_id, step, job_id):
             if os.path.isfile(os.path.join(output_dir, f)):
                 output_files.append(f)
 
+    info_lines = None
+    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_02':
+        brd_file = None
+        input_dir = os.path.join(job_path, 'input')
+        if os.path.isdir(input_dir):
+            for f in os.listdir(input_dir):
+                if f.lower().endswith('.brd'):
+                    brd_file = f
+                    break
+        xlsx_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
+        info_lines = []
+        if brd_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
+        if xlsx_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
+            info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
+
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
 
@@ -293,6 +315,7 @@ def run_step(flow_id, step, job_id):
         step=step,
         job_id=job_id,
         output_files=output_files,
+        info_lines=info_lines,
         input_tree=input_tree,
         output_tree=output_tree,
     )
