@@ -10,12 +10,33 @@ from flask import Blueprint, render_template, redirect, url_for, request, sessio
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
 JOB_DIR = os.path.join(os.path.dirname(BASE_DIR), 'jobs')
+USERS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'users.json')
 os.makedirs(JOB_DIR, exist_ok=True)
 
-USERS = {
+DEFAULT_USERS = {
     'admin': {'password': 'admin', 'role': 'admin'},
     'abc': {'password': '1234', 'role': 'user'},
 }
+
+def _load_users():
+    if os.path.isfile(USERS_FILE):
+        try:
+            with open(USERS_FILE) as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            pass
+    # Ensure the file exists with defaults if loading failed
+    with open(USERS_FILE, 'w') as f:
+        json.dump(DEFAULT_USERS, f)
+    return DEFAULT_USERS.copy()
+
+
+USERS = _load_users()
+
+
+def save_users():
+    with open(USERS_FILE, 'w') as f:
+        json.dump(USERS, f)
 
 main_bp = Blueprint('main', __name__)
 
