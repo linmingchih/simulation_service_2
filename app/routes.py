@@ -5,7 +5,7 @@ import shutil
 import importlib.util
 from functools import wraps
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, request, session
+from flask import Blueprint, render_template, redirect, url_for, request, session, make_response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
@@ -154,7 +154,11 @@ def deck():
     user = current_user()
     username = user['username'] if user else None
     jobs = load_jobs(username)
-    return render_template('deck.html', flows=flows, jobs=jobs)
+    resp = make_response(render_template('deck.html', flows=flows, jobs=jobs))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 
 @main_bp.route('/flow/<flow_id>/start', methods=['POST'])
