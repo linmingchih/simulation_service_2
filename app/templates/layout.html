@@ -22,7 +22,23 @@
       </div>
     </nav>
     <div class="container mt-4">
-      {% block content %}{% endblock %}
+      <div class="row">
+        <div class="{% if output_files %}col-md-8{% else %}col-12{% endif %}">
+          {% block content %}{% endblock %}
+        </div>
+        {% if output_files %}
+        <div class="col-md-4">
+          <h5>Output Files</h5>
+          <ul class="list-group">
+            {% for file in output_files %}
+            <li class="list-group-item">
+              <a href="{{ url_for('main.get_job_file', job_id=job_id, filename=file) }}" download>{{ file }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
     </div>
   </body>
 </html>
