@@ -1,0 +1,10 @@
+{
+  "name": "Dummy Flow",
+  "steps": [
+    "step_01",
+    "step_02",
+    "step_03",
+    "step_04",
+    "step_05"
+  ]
+}
