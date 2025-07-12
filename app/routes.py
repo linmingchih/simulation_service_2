@@ -5,7 +5,7 @@ import shutil
 import importlib.util
 from functools import wraps
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, request, session, make_response
+from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
@@ -167,6 +167,7 @@ def start_flow(flow_id):
     job_id = str(uuid.uuid4())
     job_path = os.path.join(JOB_DIR, job_id)
     os.makedirs(job_path, exist_ok=True)
+    os.makedirs(os.path.join(job_path, 'output'), exist_ok=True)
     user = current_user()
     meta = {
         'flow_id': flow_id,
@@ -199,6 +200,15 @@ def delete_job(job_id):
     return redirect(url_for('main.deck'))
 
 
+@main_bp.route('/job/<job_id>/files/<path:filename>')
+@login_required
+def get_job_file(job_id, filename):
+    job_output = os.path.join(JOB_DIR, job_id, 'output')
+    if os.path.isfile(os.path.join(job_output, filename)):
+        return send_from_directory(job_output, filename, as_attachment=True)
+    return 'File not found', 404
+
+
 @main_bp.route('/flow/<flow_id>/<step>/<job_id>', methods=['GET', 'POST'])
 @login_required
 def run_step(flow_id, step, job_id):
@@ -208,6 +218,7 @@ def run_step(flow_id, step, job_id):
         return 'Invalid step', 404
     job_path = os.path.join(JOB_DIR, job_id)
     os.makedirs(job_path, exist_ok=True)
+    os.makedirs(os.path.join(job_path, 'output'), exist_ok=True)
     meta_file = os.path.join(job_path, 'metadata.json')
     meta = {}
     if os.path.isfile(meta_file):
@@ -245,8 +256,21 @@ def run_step(flow_id, step, job_id):
         else:
             return redirect(url_for('main.deck'))
 
+    output_dir = os.path.join(job_path, 'output')
+    output_files = []
+    if os.path.isdir(output_dir):
+        for f in os.listdir(output_dir):
+            if os.path.isfile(os.path.join(output_dir, f)):
+                output_files.append(f)
+
     template = f'steps/{step}.html'
-    return render_template(template, flow_id=flow_id, step=step, job_id=job_id)
+    return render_template(
+        template,
+        flow_id=flow_id,
+        step=step,
+        job_id=job_id,
+        output_files=output_files,
+    )
 
 
 @main_bp.route('/login', methods=['GET', 'POST'])
