@@ -1,0 +1,7 @@
+{
+  "name": "Example Flow",
+  "steps": [
+    "step_01",
+    "step_02"
+  ]
+}
