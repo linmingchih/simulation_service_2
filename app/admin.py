@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
+import shutil
 from .routes import (
     login_required,
     admin_required,
@@ -52,6 +53,16 @@ def delete_user(username):
 def jobs():
     jobs_list = load_jobs()
     return render_template('jobs_info.html', jobs=jobs_list)
+
+
+@admin_bp.route('/jobs/delete/<job_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_job(job_id):
+    job_path = os.path.join(JOB_DIR, job_id)
+    if os.path.isdir(job_path):
+        shutil.rmtree(job_path)
+    return redirect(url_for('admin.jobs'))
 
 
 @admin_bp.route('/flows')
