@@ -1,0 +1,5 @@
+Flask
+waitress
+pyaedt[all]
+matplotlib
+flask_executor

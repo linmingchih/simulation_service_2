@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>Available Flows</h1>
+<ul class="list-group">
+  {% for flow in flows %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    {{ flow.name }}
+    <form action="{{ url_for('main.start_flow', flow_id=flow.id) }}" method="post">
+      <button type="submit" class="btn btn-primary btn-sm">Start</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
