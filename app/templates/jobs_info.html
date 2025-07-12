@@ -2,11 +2,32 @@
 {% block content %}
 <h2>Jobs Information</h2>
 {% if jobs %}
-<ul class="list-group">
-  {% for job in jobs %}
-  <li class="list-group-item">{{ job }}</li>
-  {% endfor %}
-</ul>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Job ID</th>
+      <th>Flow Name</th>
+      <th>Time</th>
+      <th>Step</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for job in jobs %}
+    <tr>
+      <td>{{ job.id }}</td>
+      <td>{{ job.flow_id }}</td>
+      <td>{{ job.created_at }}</td>
+      <td>{{ job.step }}</td>
+      <td>
+        <form action="{{ url_for('main.delete_job', job_id=job.id) }}" method="post" style="display:inline">
+          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% else %}
 <p>No jobs found.</p>
 {% endif %}

@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Blueprint, render_template, request, redirect, url_for
 from .routes import (
     login_required,
@@ -46,7 +47,18 @@ def delete_user(username):
 def jobs():
     jobs_list = []
     if os.path.isdir(JOB_DIR):
-        jobs_list = [name for name in os.listdir(JOB_DIR) if os.path.isdir(os.path.join(JOB_DIR, name))]
+        for name in os.listdir(JOB_DIR):
+            jdir = os.path.join(JOB_DIR, name)
+            if os.path.isdir(jdir):
+                info = {'id': name}
+                meta_file = os.path.join(jdir, 'metadata.json')
+                if os.path.isfile(meta_file):
+                    with open(meta_file) as f:
+                        try:
+                            info.update(json.load(f))
+                        except json.JSONDecodeError:
+                            pass
+                jobs_list.append(info)
     return render_template('jobs_info.html', jobs=jobs_list)
 
 
