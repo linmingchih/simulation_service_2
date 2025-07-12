@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Step 2 - Apply Stackup</h2>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="form-label">Stackup XLSX</label>
+    <input type="file" class="form-control" name="xlsx_file" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+<h3 class="mt-4">Step 1 Input</h3>
+<pre>{{ input_tree }}</pre>
+
+<h3>Step 1 Output</h3>
+<pre>{{ output_tree }}</pre>
+{% endblock %}

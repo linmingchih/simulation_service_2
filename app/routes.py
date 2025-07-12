@@ -105,6 +105,21 @@ def format_timestamp(ts):
     return str(ts)
 
 
+def _dir_tree(path):
+    """Return a formatted directory tree string for the given path."""
+    lines = []
+    if not os.path.isdir(path):
+        return ''
+    for root, dirs, files in os.walk(path):
+        rel = os.path.relpath(root, path)
+        indent = '' if rel == '.' else '    ' * rel.count(os.sep)
+        name = '.' if rel == '.' else os.path.basename(root)
+        lines.append(f"{indent}{name}/")
+        for f in files:
+            lines.append(f"{indent}    {f}")
+    return '\n'.join(lines)
+
+
 def load_flows():
     flows = []
     if not os.path.isdir(FLOW_DIR):
@@ -239,7 +254,10 @@ def run_step(flow_id, step, job_id):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         if hasattr(module, 'run'):
-            module.run(job_path, data=request.form)
+            try:
+                module.run(job_path, data=request.form, files=request.files)
+            except TypeError:
+                module.run(job_path, data=request.form)
 
         # Determine the next step from flow.json
         next_step = None
@@ -265,6 +283,9 @@ def run_step(flow_id, step, job_id):
             if os.path.isfile(os.path.join(output_dir, f)):
                 output_files.append(f)
 
+    input_tree = _dir_tree(os.path.join(job_path, 'input'))
+    output_tree = _dir_tree(output_dir)
+
     template = f'steps/{step}.html'
     return render_template(
         template,
@@ -272,6 +293,8 @@ def run_step(flow_id, step, job_id):
         step=step,
         job_id=job_id,
         output_files=output_files,
+        input_tree=input_tree,
+        output_tree=output_tree,
     )
 
 
