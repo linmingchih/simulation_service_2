@@ -6,6 +6,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'secret'
 
     from .routes import main_bp
+    from .admin import admin_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp)
 
     return app
