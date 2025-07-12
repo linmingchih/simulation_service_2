@@ -9,6 +9,7 @@ from .routes import (
     JOB_DIR,
     load_flows,
     load_jobs,
+    save_users,
 )
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -30,6 +31,7 @@ def users():
         role = request.form.get('role', 'user')
         if username and password:
             USERS[username] = {'password': password, 'role': role}
+            save_users()
         return redirect(url_for('admin.users'))
     return render_template('user_management.html', users=USERS)
 
@@ -40,6 +42,7 @@ def users():
 def delete_user(username):
     if username in USERS and username != 'admin':
         USERS.pop(username)
+        save_users()
     return redirect(url_for('admin.users'))
 
 

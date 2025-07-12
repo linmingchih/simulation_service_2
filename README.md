@@ -18,6 +18,9 @@ of a simulation service.
    ```
 3. Navigate to `http://localhost:5000` to see the available flows.
 
+User accounts are stored in `users.json` and loaded on startup, so any users
+added through the admin interface will persist across restarts.
+
 ## Project Structure
 
 - `app/` - Application package
@@ -25,6 +28,7 @@ of a simulation service.
   - `flows/` - Pluggable flow modules
   - `templates/` - Jinja2 templates
 - `jobs/` - Folder where job data is stored
+- `users.json` - Stored user accounts
 - `run.py` - Application entry point
 
 This is a simplified example intended for demonstration purposes.
