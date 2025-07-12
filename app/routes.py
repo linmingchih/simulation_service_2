@@ -4,6 +4,7 @@ import os
 import shutil
 import importlib.util
 from functools import wraps
+from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, session
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -72,7 +73,15 @@ def load_jobs():
     for job_id in os.listdir(JOB_DIR):
         jdir = os.path.join(JOB_DIR, job_id)
         if os.path.isdir(jdir):
-            jobs.append({'id': job_id})
+            meta_file = os.path.join(jdir, 'metadata.json')
+            meta = {'id': job_id}
+            if os.path.isfile(meta_file):
+                with open(meta_file) as f:
+                    try:
+                        meta.update(json.load(f))
+                    except json.JSONDecodeError:
+                        pass
+            jobs.append(meta)
     return jobs
 
 
@@ -88,6 +97,15 @@ def deck():
 @login_required
 def start_flow(flow_id):
     job_id = str(uuid.uuid4())
+    job_path = os.path.join(JOB_DIR, job_id)
+    os.makedirs(job_path, exist_ok=True)
+    meta = {
+        'flow_id': flow_id,
+        'created_at': datetime.utcnow().isoformat(),
+        'step': 'step_01'
+    }
+    with open(os.path.join(job_path, 'metadata.json'), 'w') as f:
+        json.dump(meta, f)
     return redirect(url_for('main.run_step', flow_id=flow_id, step='step_01', job_id=job_id))
 
 
@@ -108,10 +126,20 @@ def run_step(flow_id, step, job_id):
     if not os.path.isfile(step_module):
         return 'Invalid step', 404
     job_path = os.path.join(JOB_DIR, job_id)
+    os.makedirs(job_path, exist_ok=True)
+    meta_file = os.path.join(job_path, 'metadata.json')
+    meta = {}
+    if os.path.isfile(meta_file):
+        try:
+            with open(meta_file) as f:
+                meta = json.load(f)
+        except json.JSONDecodeError:
+            pass
+    meta['step'] = step
+    with open(meta_file, 'w') as f:
+        json.dump(meta, f)
 
     if request.method == 'POST':
-        if step == 'step_01' and not os.path.isdir(job_path):
-            os.makedirs(job_path, exist_ok=True)
         # Execute the current step if a run() function exists
         spec = importlib.util.spec_from_file_location(step, step_module)
         module = importlib.util.module_from_spec(spec)

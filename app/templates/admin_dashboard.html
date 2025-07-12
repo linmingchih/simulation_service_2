@@ -3,7 +3,7 @@
 <h2>Admin Dashboard</h2>
 <p>Welcome, {{ session['username'] }}.</p>
 <ul class="list-group">
-  <li class="list-group-item"><a href="{{ url_for('admin.users') }}">User Management</a></li>
+  <li class="list-group-item"><a href="{{ url_for('admin.users') }}">User Management (Add User)</a></li>
   <li class="list-group-item"><a href="{{ url_for('admin.jobs') }}">Jobs Information</a></li>
   <li class="list-group-item"><a href="{{ url_for('admin.flows') }}">Flow Management</a></li>
 </ul>
