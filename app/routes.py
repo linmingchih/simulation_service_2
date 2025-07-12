@@ -50,6 +50,40 @@ def admin_required(f):
     return decorated
 
 
+def parse_timestamp(ts):
+    if ts is None:
+        return 0
+    if isinstance(ts, (int, float)):
+        return ts
+    if isinstance(ts, str):
+        if ts.isdigit():
+            return int(ts)
+        try:
+            return datetime.fromisoformat(ts).timestamp()
+        except ValueError:
+            try:
+                return float(ts)
+            except ValueError:
+                return 0
+    return 0
+
+
+def format_timestamp(ts):
+    if ts is None:
+        return ''
+    if isinstance(ts, (int, float)):
+        return datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    if isinstance(ts, str):
+        if ts.isdigit():
+            return datetime.utcfromtimestamp(int(ts)).strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            dt = datetime.fromisoformat(ts)
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return ts
+    return str(ts)
+
+
 def load_flows():
     flows = []
     if not os.path.isdir(FLOW_DIR):
@@ -83,24 +117,11 @@ def load_jobs():
                         pass
             jobs.append(meta)
     def sort_key(item):
-        ts = item.get('created_at')
-        if ts is None:
-            return 0
-        if isinstance(ts, (int, float)):
-            return ts
-        if isinstance(ts, str):
-            if ts.isdigit():
-                return int(ts)
-            try:
-                return datetime.fromisoformat(ts).timestamp()
-            except ValueError:
-                try:
-                    return float(ts)
-                except ValueError:
-                    return 0
-        return 0
+        return parse_timestamp(item.get('created_at'))
 
     jobs.sort(key=sort_key, reverse=True)
+    for job in jobs:
+        job['created_at'] = format_timestamp(job.get('created_at'))
     return jobs
 
 
@@ -120,7 +141,7 @@ def start_flow(flow_id):
     os.makedirs(job_path, exist_ok=True)
     meta = {
         'flow_id': flow_id,
-        'created_at': int(datetime.utcnow().timestamp()),
+        'created_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
         'step': 'step_01'
     }
     with open(os.path.join(job_path, 'metadata.json'), 'w') as f:
