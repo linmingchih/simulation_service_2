@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Flow Management</h2>
+{% if flows %}
+<ul class="list-group">
+  {% for flow in flows %}
+  <li class="list-group-item">
+    <strong>{{ flow.name }}</strong> ({{ flow.id }})<br>
+    Steps: {{ flow.steps | join(', ') }}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No flows found.</p>
+{% endif %}
+{% endblock %}

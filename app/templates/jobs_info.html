@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Jobs Information</h2>
+{% if jobs %}
+<ul class="list-group">
+  {% for job in jobs %}
+  <li class="list-group-item">{{ job }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No jobs found.</p>
+{% endif %}
+{% endblock %}
