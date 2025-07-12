@@ -100,7 +100,7 @@ def load_flows():
     return flows
 
 
-def load_jobs():
+def load_jobs(username=None):
     jobs = []
     if not os.path.isdir(JOB_DIR):
         return jobs
@@ -115,7 +115,8 @@ def load_jobs():
                         meta.update(json.load(f))
                     except json.JSONDecodeError:
                         pass
-            jobs.append(meta)
+            if username is None or meta.get('user') == username:
+                jobs.append(meta)
     def sort_key(item):
         return parse_timestamp(item.get('created_at'))
 
@@ -129,7 +130,9 @@ def load_jobs():
 @login_required
 def deck():
     flows = load_flows()
-    jobs = load_jobs()
+    user = current_user()
+    username = user['username'] if user else None
+    jobs = load_jobs(username)
     return render_template('deck.html', flows=flows, jobs=jobs)
 
 
@@ -139,10 +142,12 @@ def start_flow(flow_id):
     job_id = str(uuid.uuid4())
     job_path = os.path.join(JOB_DIR, job_id)
     os.makedirs(job_path, exist_ok=True)
+    user = current_user()
     meta = {
         'flow_id': flow_id,
         'created_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-        'step': 'step_01'
+        'step': 'step_01',
+        'user': user['username'] if user else ''
     }
     with open(os.path.join(job_path, 'metadata.json'), 'w') as f:
         json.dump(meta, f)
@@ -154,7 +159,18 @@ def start_flow(flow_id):
 def delete_job(job_id):
     job_path = os.path.join(JOB_DIR, job_id)
     if os.path.isdir(job_path):
-        shutil.rmtree(job_path)
+        meta_file = os.path.join(job_path, 'metadata.json')
+        owner = None
+        if os.path.isfile(meta_file):
+            with open(meta_file) as f:
+                try:
+                    data = json.load(f)
+                    owner = data.get('user')
+                except json.JSONDecodeError:
+                    pass
+        user = current_user()
+        if user and (user.get('role') == 'admin' or owner == user.get('username')):
+            shutil.rmtree(job_path)
     return redirect(url_for('main.deck'))
 
 

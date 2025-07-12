@@ -5,6 +5,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th>User</th>
       <th>Flow Name</th>
       <th>Time</th>
       <th>Step</th>
@@ -14,6 +15,7 @@
   <tbody>
     {% for job in jobs %}
     <tr>
+      <td>{{ job.user }}</td>
       <td>{{ job.flow_id }}</td>
       <td>{{ job.created_at }}</td>
       <td>{{ job.step }}</td>
