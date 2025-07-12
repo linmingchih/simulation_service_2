@@ -1,5 +1,47 @@
 import os
+import shutil
 from openpyxl import Workbook
+from pyedb import Edb
+
+
+def export_stackup(edb_obj, xlsx_path):
+    data = []
+    for layer_name, layer in edb_obj.stackup.stackup_layers.items():
+        mat = edb_obj.materials.materials[layer.material]
+        if layer.type == "signal":
+            permittivity = ""
+            loss_tangent = ""
+            conductivity = mat.conductivity
+        else:
+            permittivity = mat.permittivity
+            loss_tangent = mat.dielectric_loss_tangent
+            conductivity = ""
+        thickness_mm = layer.thickness * 1000.0
+        data.append(
+            [
+                layer_name,
+                layer.type,
+                thickness_mm,
+                permittivity,
+                loss_tangent,
+                conductivity,
+            ]
+        )
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Stackup"
+    header = [
+        "Layer Name",
+        "Type",
+        "Thickness (mm)",
+        "Permittivity",
+        "Loss Tangent",
+        "Conductivity (S/m)",
+    ]
+    ws.append(header)
+    for row in data:
+        ws.append(row)
+    wb.save(xlsx_path)
 
 
 def run(job_path, data=None, files=None):
@@ -8,21 +50,19 @@ def run(job_path, data=None, files=None):
     os.makedirs(input_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
 
-    brd = files.get('brd_file') if files else None
+    brd = files.get("brd_file") if files else None
     if brd and brd.filename:
         brd_path = os.path.join(input_dir, brd.filename)
         brd.save(brd_path)
 
-        # Placeholder for conversion to EDB
-        edb_dir = os.path.join(output_dir, 'design.aedb')
-        os.makedirs(edb_dir, exist_ok=True)
-        with open(os.path.join(edb_dir, 'placeholder.txt'), 'w') as f:
-            f.write('EDB content')
+        # Convert the BRD file to an AEDB using PyEDB
+        edb = Edb(brd_path, edbversion="2024.1")
+        edb_dir = os.path.join(output_dir, "design.aedb")
+        if os.path.isdir(edb_dir):
+            shutil.rmtree(edb_dir)
+        edb.save_as(edb_dir)
 
-        # Generate a simple stackup.xlsx
-        xlsx_path = os.path.join(output_dir, 'stackup.xlsx')
-        wb = Workbook()
-        ws = wb.active
-        ws.title = 'Stackup'
-        ws.append(['Layer Name', 'Type', 'Thickness (mm)', 'Permittivity', 'Loss Tangent', 'Conductivity (S/m)'])
-        wb.save(xlsx_path)
+        # Export the stackup to Excel
+        xlsx_path = os.path.join(output_dir, "stackup.xlsx")
+        export_stackup(edb, xlsx_path)
+        edb.close()
