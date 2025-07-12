@@ -8,8 +8,7 @@ from .routes import (
     USERS,
     JOB_DIR,
     load_flows,
-    parse_timestamp,
-    format_timestamp,
+    load_jobs,
 )
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -48,26 +47,7 @@ def delete_user(username):
 @login_required
 @admin_required
 def jobs():
-    jobs_list = []
-    if os.path.isdir(JOB_DIR):
-        for name in os.listdir(JOB_DIR):
-            jdir = os.path.join(JOB_DIR, name)
-            if os.path.isdir(jdir):
-                info = {'id': name}
-                meta_file = os.path.join(jdir, 'metadata.json')
-                if os.path.isfile(meta_file):
-                    with open(meta_file) as f:
-                        try:
-                            info.update(json.load(f))
-                        except json.JSONDecodeError:
-                            pass
-                jobs_list.append(info)
-    def sort_key(item):
-        return parse_timestamp(item.get('created_at'))
-
-    jobs_list.sort(key=sort_key, reverse=True)
-    for job in jobs_list:
-        job['created_at'] = format_timestamp(job.get('created_at'))
+    jobs_list = load_jobs()
     return render_template('jobs_info.html', jobs=jobs_list)
 
 
