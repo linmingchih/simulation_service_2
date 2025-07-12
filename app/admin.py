@@ -59,6 +59,14 @@ def jobs():
                         except json.JSONDecodeError:
                             pass
                 jobs_list.append(info)
+    def sort_key(item):
+        ts = item.get('created_at')
+        try:
+            return datetime.fromisoformat(ts) if ts else datetime.min
+        except ValueError:
+            return datetime.min
+
+    jobs_list.sort(key=sort_key, reverse=True)
     return render_template('jobs_info.html', jobs=jobs_list)
 
 
