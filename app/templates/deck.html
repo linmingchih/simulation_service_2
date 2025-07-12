@@ -20,7 +20,6 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Job ID</th>
       <th>Flow Name</th>
       <th>Time</th>
       <th>Step</th>
@@ -30,7 +29,6 @@
   <tbody>
     {% for job in jobs %}
     <tr>
-      <td>{{ job.id }}</td>
       <td>{{ job.flow_id }}</td>
       <td>{{ job.created_at }}</td>
       <td>{{ job.step }}</td>

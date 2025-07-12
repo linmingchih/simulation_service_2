@@ -82,6 +82,14 @@ def load_jobs():
                     except json.JSONDecodeError:
                         pass
             jobs.append(meta)
+    def sort_key(item):
+        ts = item.get('created_at')
+        try:
+            return datetime.fromisoformat(ts) if ts else datetime.min
+        except ValueError:
+            return datetime.min
+
+    jobs.sort(key=sort_key, reverse=True)
     return jobs
 
 
