@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
 from .routes import (
     login_required,
@@ -61,10 +62,21 @@ def jobs():
                 jobs_list.append(info)
     def sort_key(item):
         ts = item.get('created_at')
-        try:
-            return datetime.fromisoformat(ts) if ts else datetime.min
-        except ValueError:
-            return datetime.min
+        if ts is None:
+            return 0
+        if isinstance(ts, (int, float)):
+            return ts
+        if isinstance(ts, str):
+            if ts.isdigit():
+                return int(ts)
+            try:
+                return datetime.fromisoformat(ts).timestamp()
+            except ValueError:
+                try:
+                    return float(ts)
+                except ValueError:
+                    return 0
+        return 0
 
     jobs_list.sort(key=sort_key, reverse=True)
     return render_template('jobs_info.html', jobs=jobs_list)
