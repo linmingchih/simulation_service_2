@@ -8,8 +8,9 @@
   {% for flow in flows %}
   <li class="list-group-item d-flex justify-content-between align-items-center">
     {{ flow.name }}
-    <form action="{{ url_for('main.start_flow', flow_id=flow.id) }}" method="post">
-      <button type="submit" class="btn btn-primary btn-sm">Start</button>
+    <form action="{{ url_for('main.start_flow', flow_id=flow.id) }}" method="post" class="d-flex ms-auto" style="max-width: 500px;">
+      <input type="text" name="topic" class="form-control me-2" placeholder="Enter topic" oninput="this.nextElementSibling.disabled = this.value.trim() === ''" required>
+      <button type="submit" class="btn btn-primary btn-sm" disabled>Start</button>
     </form>
   </li>
   {% endfor %}
@@ -21,6 +22,7 @@
   <thead>
     <tr>
       <th>Flow Name</th>
+      <th>Topic</th>
       <th>Time</th>
       <th>Step</th>
       <th></th>
@@ -30,6 +32,7 @@
     {% for job in jobs %}
     <tr>
       <td>{{ job.flow_id }}</td>
+      <td>{{ job.topic }}</td>
       <td>{{ job.created_at }}</td>
       <td>{{ job.step }}</td>
       <td>

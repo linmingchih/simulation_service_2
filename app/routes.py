@@ -169,11 +169,13 @@ def start_flow(flow_id):
     os.makedirs(job_path, exist_ok=True)
     os.makedirs(os.path.join(job_path, 'output'), exist_ok=True)
     user = current_user()
+    topic = request.form.get('topic', '').strip()
     meta = {
         'flow_id': flow_id,
         'created_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
         'step': 'step_01',
-        'user': user['username'] if user else ''
+        'user': user['username'] if user else '',
+        'topic': topic
     }
     with open(os.path.join(job_path, 'metadata.json'), 'w') as f:
         json.dump(meta, f)
