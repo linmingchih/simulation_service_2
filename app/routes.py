@@ -1,6 +1,7 @@
 import json
 import uuid
 import os
+import importlib.util
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, request, session
 
@@ -86,10 +87,32 @@ def run_step(flow_id, step, job_id):
     step_module = os.path.join(flow_path, f'{step}.py')
     if not os.path.isfile(step_module):
         return 'Invalid step', 404
+    job_path = os.path.join(JOB_DIR, job_id)
 
     if request.method == 'POST':
-        # Here we would process form data and execute the step
-        pass
+        # Execute the current step if a run() function exists
+        spec = importlib.util.spec_from_file_location(step, step_module)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if hasattr(module, 'run'):
+            module.run(job_path, data=request.form)
+
+        # Determine the next step from flow.json
+        next_step = None
+        flow_json = os.path.join(flow_path, 'flow.json')
+        if os.path.isfile(flow_json):
+            with open(flow_json) as f:
+                data = json.load(f)
+                steps = data.get('steps', [])
+                if step in steps:
+                    idx = steps.index(step)
+                    if idx + 1 < len(steps):
+                        next_step = steps[idx + 1]
+
+        if next_step:
+            return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
+        else:
+            return redirect(url_for('main.deck'))
 
     template = f'steps/{step}.html'
     return render_template(template, flow_id=flow_id, step=step, job_id=job_id)
