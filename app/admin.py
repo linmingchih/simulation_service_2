@@ -8,6 +8,8 @@ from .routes import (
     USERS,
     JOB_DIR,
     load_flows,
+    parse_timestamp,
+    format_timestamp,
 )
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -61,24 +63,11 @@ def jobs():
                             pass
                 jobs_list.append(info)
     def sort_key(item):
-        ts = item.get('created_at')
-        if ts is None:
-            return 0
-        if isinstance(ts, (int, float)):
-            return ts
-        if isinstance(ts, str):
-            if ts.isdigit():
-                return int(ts)
-            try:
-                return datetime.fromisoformat(ts).timestamp()
-            except ValueError:
-                try:
-                    return float(ts)
-                except ValueError:
-                    return 0
-        return 0
+        return parse_timestamp(item.get('created_at'))
 
     jobs_list.sort(key=sort_key, reverse=True)
+    for job in jobs_list:
+        job['created_at'] = format_timestamp(job.get('created_at'))
     return render_template('jobs_info.html', jobs=jobs_list)
 
 
