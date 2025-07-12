@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+from jinja2 import ChoiceLoader, PrefixLoader, FileSystemLoader
 
 
 def _register_flow_templates(app):
@@ -8,10 +9,17 @@ def _register_flow_templates(app):
     if not os.path.isdir(flows_dir):
         return
 
+    prefix_map = {}
     for flow_name in os.listdir(flows_dir):
         templates = os.path.join(flows_dir, flow_name, "templates")
-        if os.path.isdir(templates) and templates not in app.jinja_loader.searchpath:
-            app.jinja_loader.searchpath.append(templates)
+        if os.path.isdir(templates):
+            prefix_map[flow_name] = FileSystemLoader(templates)
+
+    if prefix_map:
+        app.jinja_loader = ChoiceLoader([
+            app.jinja_loader,
+            PrefixLoader(prefix_map),
+        ])
 
 
 def create_app():

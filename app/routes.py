@@ -286,7 +286,7 @@ def run_step(flow_id, step, job_id):
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
 
-    template = f'steps/{step}.html'
+    template = f'{flow_id}/steps/{step}.html'
     return render_template(
         template,
         flow_id=flow_id,
