@@ -1,6 +1,7 @@
 import json
 import uuid
 import os
+import shutil
 import importlib.util
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, request, session
@@ -8,6 +9,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, sessio
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
 JOB_DIR = os.path.join(os.path.dirname(BASE_DIR), 'jobs')
+os.makedirs(JOB_DIR, exist_ok=True)
 
 USERS = {
     'admin': {'password': 'admin', 'role': 'admin'},
@@ -63,21 +65,39 @@ def load_flows():
     return flows
 
 
+def load_jobs():
+    jobs = []
+    if not os.path.isdir(JOB_DIR):
+        return jobs
+    for job_id in os.listdir(JOB_DIR):
+        jdir = os.path.join(JOB_DIR, job_id)
+        if os.path.isdir(jdir):
+            jobs.append({'id': job_id})
+    return jobs
+
+
 @main_bp.route('/')
 @login_required
 def deck():
     flows = load_flows()
-    return render_template('deck.html', flows=flows)
+    jobs = load_jobs()
+    return render_template('deck.html', flows=flows, jobs=jobs)
 
 
 @main_bp.route('/flow/<flow_id>/start', methods=['POST'])
 @login_required
 def start_flow(flow_id):
     job_id = str(uuid.uuid4())
-    job_path = os.path.join(JOB_DIR, job_id)
-    os.makedirs(job_path, exist_ok=True)
-
     return redirect(url_for('main.run_step', flow_id=flow_id, step='step_01', job_id=job_id))
+
+
+@main_bp.route('/job/<job_id>/delete', methods=['POST'])
+@login_required
+def delete_job(job_id):
+    job_path = os.path.join(JOB_DIR, job_id)
+    if os.path.isdir(job_path):
+        shutil.rmtree(job_path)
+    return redirect(url_for('main.deck'))
 
 
 @main_bp.route('/flow/<flow_id>/<step>/<job_id>', methods=['GET', 'POST'])
@@ -90,6 +110,8 @@ def run_step(flow_id, step, job_id):
     job_path = os.path.join(JOB_DIR, job_id)
 
     if request.method == 'POST':
+        if step == 'step_01' and not os.path.isdir(job_path):
+            os.makedirs(job_path, exist_ok=True)
         # Execute the current step if a run() function exists
         spec = importlib.util.spec_from_file_location(step, step_module)
         module = importlib.util.module_from_spec(spec)
