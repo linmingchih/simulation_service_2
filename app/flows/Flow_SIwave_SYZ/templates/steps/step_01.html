@@ -1,11 +1,22 @@
 {% extends 'layout.html' %}
 {% block content %}
 <h2>Step 1 - Import Brd</h2>
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" id="brd-form">
   <div class="mb-3">
     <label class="form-label">BRD File</label>
     <input type="file" class="form-control" name="brd_file" required>
   </div>
-  <button type="submit" class="btn btn-primary">Apply</button>
+  <button type="submit" class="btn btn-primary" id="apply-btn">Apply</button>
 </form>
+
+<script>
+  const form = document.getElementById('brd-form');
+  const btn = document.getElementById('apply-btn');
+  form.addEventListener('submit', () => {
+    btn.disabled = true;
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-warning');
+    btn.textContent = 'Running...';
+  });
+</script>
 {% endblock %}
