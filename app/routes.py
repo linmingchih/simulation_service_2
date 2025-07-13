@@ -5,7 +5,7 @@ import shutil
 import importlib.util
 from functools import wraps
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory
+from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory, jsonify
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
@@ -174,6 +174,16 @@ def deck():
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
     return resp
+
+
+@main_bp.route('/api/jobs')
+@login_required
+def api_jobs():
+    """Return jobs for the current user as JSON."""
+    user = current_user()
+    username = user['username'] if user else None
+    jobs = load_jobs(username)
+    return jsonify({'jobs': jobs})
 
 
 @main_bp.route('/flow/<flow_id>/start', methods=['POST'])

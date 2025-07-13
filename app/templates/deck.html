@@ -28,7 +28,7 @@
       <th></th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="jobs-body">
     {% for job in jobs %}
     <tr>
       <td>{{ job.flow_id }}</td>
@@ -52,4 +52,44 @@
 {% else %}
 <p>No jobs available.</p>
 {% endif %}
+<script>
+  function fetchJobs() {
+    fetch("{{ url_for('main.api_jobs') }}")
+      .then(r => r.json())
+      .then(data => updateJobs(data.jobs));
+  }
+
+  function updateJobs(jobs) {
+    const tbody = document.getElementById('jobs-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    jobs.forEach(job => {
+      const tr = document.createElement('tr');
+      const resumeUrl = `/flow/${job.flow_id}/${job.step}/${job.id}`;
+      const deleteUrl = `/job/${job.id}/delete`;
+      const stepText = job.step === 'completed' ? 'Completed' : job.step;
+      tr.innerHTML = `
+        <td>${job.flow_id}</td>
+        <td>${job.topic}</td>
+        <td>${job.created_at}</td>
+        <td>${stepText}</td>
+        <td>
+          ${job.step !== 'completed' ? `<a href="${resumeUrl}" class="btn btn-sm btn-primary me-2">Resume</a>` : '<span class="text-success me-2">Done</span>'}
+          <form action="${deleteUrl}" method="post" style="display:inline" onsubmit="return confirmDelete();">
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      fetchJobs();
+    }
+  });
+
+  setInterval(fetchJobs, 5000);
+  fetchJobs();
+</script>
 {% endblock %}
