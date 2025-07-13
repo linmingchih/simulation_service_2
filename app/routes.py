@@ -405,9 +405,6 @@ def run_step(flow_id, step, job_id):
         if xlsx_input:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
             info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
-        if updated_file:
-            url = url_for('main.get_job_file', job_id=job_id, filename=updated_file)
-            info_lines.append(f'Step 2 Output: <a href="{url}" download>{updated_file}</a>')
         if zipped_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=zipped_file)
             info_lines.append(f'Step 2 Output: <a href="{url}" download>{zipped_file}</a>')
