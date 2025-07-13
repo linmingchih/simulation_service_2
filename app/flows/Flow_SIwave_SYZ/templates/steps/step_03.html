@@ -1,0 +1,6 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Finish</h2>
+<p>Processing completed for {{ flow_id }}.</p>
+<a href="{{ url_for('main.deck') }}" class="btn btn-secondary">Back to Deck</a>
+{% endblock %}
