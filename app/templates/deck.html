@@ -34,9 +34,13 @@
       <td>{{ job.flow_id }}</td>
       <td>{{ job.topic }}</td>
       <td>{{ job.created_at }}</td>
-      <td>{{ job.step }}</td>
+      <td>{{ 'Completed' if job.step == 'completed' else job.step }}</td>
       <td>
+        {% if job.step != 'completed' %}
         <a href="{{ url_for('main.run_step', flow_id=job.flow_id, step=job.step, job_id=job.id) }}" class="btn btn-sm btn-primary me-2">Resume</a>
+        {% else %}
+        <span class="text-success me-2">Done</span>
+        {% endif %}
         <form action="{{ url_for('main.delete_job', job_id=job.id) }}" method="post" style="display:inline">
           <button type="submit" class="btn btn-sm btn-danger">Delete</button>
         </form>
