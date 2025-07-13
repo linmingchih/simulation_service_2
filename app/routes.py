@@ -330,6 +330,22 @@ def run_step(flow_id, step, job_id):
         if xlsx_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_03':
+        xlsx_input = None
+        input_dir = os.path.join(job_path, 'input')
+        if os.path.isdir(input_dir):
+            for f in os.listdir(input_dir):
+                if f.lower().endswith('.xlsx'):
+                    xlsx_input = f
+                    break
+        updated_file = 'updated.xlsx' if os.path.isfile(os.path.join(output_dir, 'updated.xlsx')) else None
+        info_lines = []
+        if xlsx_input:
+            url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
+            info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
+        if updated_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=updated_file)
+            info_lines.append(f'Step 2 Output: <a href="{url}" download>{updated_file}</a>')
 
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
