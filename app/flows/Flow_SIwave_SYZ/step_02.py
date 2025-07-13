@@ -1,5 +1,6 @@
 import os
 import shutil
+import zipfile
 import openpyxl
 from pyedb import Edb
 
@@ -41,5 +42,16 @@ def run(job_path, data=None, files=None):
         edb_dir = os.path.join(output_dir, 'design.aedb')
         if os.path.isdir(edb_dir):
             apply_xlsx(x_path, edb_dir)
+
+            # Create a zipped copy of the updated AEDB for easy download
+            zip_path = os.path.join(output_dir, 'updated_pyedb.zip')
+            if os.path.isfile(zip_path):
+                os.remove(zip_path)
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for root, dirs, files in os.walk(edb_dir):
+                    for file in files:
+                        abs_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(abs_path, os.path.dirname(edb_dir))
+                        zf.write(abs_path, rel_path)
 
     return {}
