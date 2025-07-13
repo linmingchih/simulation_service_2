@@ -249,6 +249,18 @@ def run_step(flow_id, step, job_id):
         except json.JSONDecodeError:
             pass
 
+    flow_json = os.path.join(flow_path, 'flow.json')
+    flow_name = flow_id
+    if os.path.isfile(flow_json):
+        try:
+            with open(flow_json) as f:
+                data = json.load(f)
+                flow_name = data.get('name', flow_id)
+        except json.JSONDecodeError:
+            pass
+
+    job_topic = meta.get('topic', '')
+
 
     current_step = meta.get('step', step)
 
