@@ -33,7 +33,10 @@ def apply_xlsx(xlsx_path, edb_path):
             edb.stackup.stackup_layers[layer_name].material = material_dic[(permittivity, loss_tangent)].name
     
     edb.save()
-    edb.close_edb()
+    # close_edb was used previously but the correct API call in PyAEDT is
+    # simply close(). Using the wrong method results in an AttributeError and
+    # prevents the AEDB from being written and zipped properly.
+    edb.close()
 
 
 def run(job_path, data=None, files=None):
