@@ -341,21 +341,34 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_03':
+        brd_file = None
         xlsx_input = None
         input_dir = os.path.join(job_path, 'input')
         if os.path.isdir(input_dir):
             for f in os.listdir(input_dir):
+                if f.lower().endswith('.brd') and not brd_file:
+                    brd_file = f
                 if f.lower().endswith('.xlsx'):
                     xlsx_input = f
-                    break
+        stackup_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
         updated_file = 'updated.xlsx' if os.path.isfile(os.path.join(output_dir, 'updated.xlsx')) else None
+        zipped_file = 'updated_pyedb.zip' if os.path.isfile(os.path.join(output_dir, 'updated_pyedb.zip')) else None
         info_lines = []
+        if brd_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
+        if stackup_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=stackup_file)
+            info_lines.append(f'Step 1 Output: <a href="{url}" download>{stackup_file}</a>')
         if xlsx_input:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
             info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
         if updated_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=updated_file)
             info_lines.append(f'Step 2 Output: <a href="{url}" download>{updated_file}</a>')
+        if zipped_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=zipped_file)
+            info_lines.append(f'Step 2 Output: <a href="{url}" download>{zipped_file}</a>')
 
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
