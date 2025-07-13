@@ -248,6 +248,17 @@ def run_step(flow_id, step, job_id):
                 meta = json.load(f)
         except json.JSONDecodeError:
             pass
+    job_topic = meta.get('topic', '')
+
+    flow_json = os.path.join(flow_path, 'flow.json')
+    flow_name = flow_id
+    if os.path.isfile(flow_json):
+        try:
+            with open(flow_json) as f:
+                fdata = json.load(f)
+                flow_name = fdata.get('name', flow_id)
+        except json.JSONDecodeError:
+            pass
     meta['step'] = step
     with open(meta_file, 'w') as f:
         json.dump(meta, f)
@@ -312,8 +323,10 @@ def run_step(flow_id, step, job_id):
     return render_template(
         template,
         flow_id=flow_id,
+        flow_name=flow_name,
         step=step,
         job_id=job_id,
+        job_topic=job_topic,
         output_files=output_files,
         info_lines=info_lines,
         input_tree=input_tree,
