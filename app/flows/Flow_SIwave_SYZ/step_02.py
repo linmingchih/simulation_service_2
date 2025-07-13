@@ -32,7 +32,7 @@ def apply_xlsx(xlsx_path, edb_path):
             
             edb.stackup.stackup_layers[layer_name].material = material_dic[(permittivity, loss_tangent)].name
     
-    edb.save_edb_as('modified.aedb')
+    edb.save()
     edb.close_edb()
 
 
