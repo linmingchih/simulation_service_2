@@ -110,6 +110,9 @@
         li.style.display = (selected === 'all' || selected === g) ? '' : 'none';
       });
     });
+    // Apply the current selection on initial load so the list matches
+    // whatever option the browser may have persisted across navigation.
+    groupSelect.dispatchEvent(new Event('change'));
   }
 </script>
 {% endblock %}
