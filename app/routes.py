@@ -249,6 +249,7 @@ def run_step(flow_id, step, job_id):
         except json.JSONDecodeError:
             pass
 
+
     current_step = meta.get('step', step)
 
     if current_step == 'completed':
@@ -256,6 +257,7 @@ def run_step(flow_id, step, job_id):
 
     if step != current_step:
         return redirect(url_for('main.run_step', flow_id=flow_id, step=current_step, job_id=job_id))
+
 
     if request.method == 'POST':
         # Execute the current step if a run() function exists
@@ -324,8 +326,10 @@ def run_step(flow_id, step, job_id):
     return render_template(
         template,
         flow_id=flow_id,
+        flow_name=flow_name,
         step=step,
         job_id=job_id,
+        job_topic=job_topic,
         output_files=output_files,
         info_lines=info_lines,
         input_tree=input_tree,
