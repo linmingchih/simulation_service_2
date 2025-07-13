@@ -200,10 +200,18 @@ def load_jobs(username=None):
 def deck():
     flows = load_flows()
     groups = sorted(GROUPS.keys())
+    # Determine selected group from query parameter for server-side filtering
+    selected_group = request.args.get('group', 'all')
+    if selected_group != 'all':
+        if selected_group == 'Ungrouped':
+            flows = [f for f in flows if not f.get('group')]
+        else:
+            flows = [f for f in flows if f.get('group') == selected_group]
     user = current_user()
     username = user['username'] if user else None
     jobs = load_jobs(username)
-    resp = make_response(render_template('deck.html', flows=flows, jobs=jobs, groups=groups))
+    resp = make_response(render_template('deck.html', flows=flows, jobs=jobs, groups=groups,
+                                         selected_group=selected_group))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
