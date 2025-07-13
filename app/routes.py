@@ -248,9 +248,14 @@ def run_step(flow_id, step, job_id):
                 meta = json.load(f)
         except json.JSONDecodeError:
             pass
-    meta['step'] = step
-    with open(meta_file, 'w') as f:
-        json.dump(meta, f)
+
+    current_step = meta.get('step', step)
+
+    if current_step == 'completed':
+        return redirect(url_for('main.deck'))
+
+    if step != current_step:
+        return redirect(url_for('main.run_step', flow_id=flow_id, step=current_step, job_id=job_id))
 
     if request.method == 'POST':
         # Execute the current step if a run() function exists
@@ -274,6 +279,13 @@ def run_step(flow_id, step, job_id):
                     idx = steps.index(step)
                     if idx + 1 < len(steps):
                         next_step = steps[idx + 1]
+
+        if next_step:
+            meta['step'] = next_step
+        else:
+            meta['step'] = 'completed'
+        with open(meta_file, 'w') as f:
+            json.dump(meta, f)
 
         if next_step:
             return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
