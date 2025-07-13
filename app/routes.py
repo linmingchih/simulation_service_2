@@ -11,11 +11,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLOW_DIR = os.path.join(BASE_DIR, 'flows')
 JOB_DIR = os.path.join(os.path.dirname(BASE_DIR), 'jobs')
 USERS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'users.json')
+GROUPS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'groups.json')
 os.makedirs(JOB_DIR, exist_ok=True)
 
 DEFAULT_USERS = {
     'admin': {'password': 'admin', 'role': 'admin'},
     'abc': {'password': '1234', 'role': 'user'},
+}
+
+DEFAULT_GROUPS = {
+    'SIwave': ['Flow_SIwave_SYZ'],
+    'HFSS': ['Flow_Dummy', 'Flow_Example']
 }
 
 def _load_users():
@@ -32,6 +38,26 @@ def _load_users():
 
 
 USERS = _load_users()
+
+
+def _load_groups():
+    if os.path.isfile(GROUPS_FILE):
+        try:
+            with open(GROUPS_FILE) as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            pass
+    with open(GROUPS_FILE, 'w') as f:
+        json.dump(DEFAULT_GROUPS, f)
+    return DEFAULT_GROUPS.copy()
+
+
+GROUPS = _load_groups()
+
+
+def save_groups():
+    with open(GROUPS_FILE, 'w') as f:
+        json.dump(GROUPS, f)
 
 
 def save_users():
@@ -132,6 +158,13 @@ def load_flows():
                 with open(fjson) as f:
                     data = json.load(f)
                     data['id'] = name
+                    # Determine group
+                    group = None
+                    for gname, items in GROUPS.items():
+                        if name in items:
+                            group = gname
+                            break
+                    data['group'] = group
                     flows.append(data)
     return flows
 
@@ -166,10 +199,11 @@ def load_jobs(username=None):
 @login_required
 def deck():
     flows = load_flows()
+    groups = sorted(GROUPS.keys())
     user = current_user()
     username = user['username'] if user else None
     jobs = load_jobs(username)
-    resp = make_response(render_template('deck.html', flows=flows, jobs=jobs))
+    resp = make_response(render_template('deck.html', flows=flows, jobs=jobs, groups=groups))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
