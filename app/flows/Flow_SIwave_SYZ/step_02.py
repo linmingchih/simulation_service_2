@@ -3,6 +3,7 @@ import shutil
 import zipfile
 import openpyxl
 from pyedb import Edb
+from app.utils import is_file_locked
 
 def apply_xlsx(xlsx_path, edb_path, edb_version="2024.1"):
     edb = Edb(edb_path, edbversion=edb_version)
@@ -52,6 +53,16 @@ def run(job_path, data=None, files=None, config=None):
     if xlsx and xlsx.filename:
         x_path = os.path.join(input_dir, xlsx.filename)
         xlsx.save(x_path)
+
+        if is_file_locked(x_path) or not os.access(x_path, os.W_OK):
+            os.remove(x_path)
+            return {
+                'error': (
+                    '\u26a0\ufe0f The selected Excel file is currently locked or '
+                    'in use. Please close it and try again.'
+                )
+            }
+
         shutil.copy(x_path, os.path.join(output_dir, 'updated.xlsx'))
 
         edb_dir = os.path.join(output_dir, 'design.aedb')
