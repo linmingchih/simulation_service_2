@@ -3,6 +3,7 @@ import uuid
 import os
 import shutil
 import importlib.util
+from pyedb import Edb
 from functools import wraps
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory, jsonify
@@ -399,6 +400,9 @@ def run_step(flow_id, step, job_id):
                 output_files.append(f)
 
     info_lines = None
+    nets = None
+    selected_nets = None
+    zip_file = None
     if flow_id == 'Flow_SIwave_SYZ' and step == 'step_02':
         brd_file = None
         input_dir = os.path.join(job_path, 'input')
@@ -442,6 +446,39 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=zipped_file)
             info_lines.append(f'Step 2 Output: <a href="{url}" download>{zipped_file}</a>')
 
+        # Gather net names from the generated AEDB for display
+        nets = []
+        edb_dir = os.path.join(output_dir, 'design.aedb')
+        if os.path.isdir(edb_dir):
+            try:
+                edb = Edb(edb_dir, edbversion='2024.1')
+                nets = list(edb.nets.nets.keys())
+                edb.close_edb()
+            except Exception:
+                nets = []
+
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
+        zip_file = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
+        selected_nets = []
+        info_path = os.path.join(output_dir, 'cutout_info.json')
+        if os.path.isfile(info_path):
+            with open(info_path) as fp:
+                try:
+                    data = json.load(fp)
+                    selected_nets = data.get('selected_nets', [])
+                except json.JSONDecodeError:
+                    pass
+        nets = selected_nets
+        info_lines = []
+        if selected_nets:
+            info_lines.append('<strong>Input Nets:</strong> ' + ', '.join(selected_nets))
+        if zip_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=zip_file)
+            info_lines.append(f'<strong>Output:</strong> <a href="{url}" download>{zip_file}</a>')
+
+    else:
+        nets = None
+
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
 
@@ -455,8 +492,11 @@ def run_step(flow_id, step, job_id):
         job_topic=job_topic,
         output_files=output_files,
         info_lines=info_lines,
+        nets=nets,
         input_tree=input_tree,
         output_tree=output_tree,
+        selected_nets=selected_nets,
+        zip_file=zip_file,
     )
 
 
