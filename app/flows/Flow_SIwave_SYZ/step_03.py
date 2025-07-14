@@ -42,9 +42,13 @@ def run(job_path, data=None, files=None):
     if selected_nets:
         cutout_dir = os.path.join(output_dir, "cutout.aedb")
         _remove_dir(cutout_dir)
-        cut = edb.cutout(selected_nets, reference_list=pwr_nets, extent_type="Bounding")
-        cut.save_as(cutout_dir)
-        cut.close_edb()
+        edb.cutout(
+            signal_list=selected_nets,
+            reference_list=pwr_nets,
+            extent_type="Bounding",
+            output_aedb_path=cutout_dir,
+            open_cutout_at_end=False,
+        )
 
         zip_path = os.path.join(output_dir, "cutout.zip")
         if os.path.isfile(zip_path):
