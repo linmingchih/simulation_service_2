@@ -4,7 +4,7 @@ from openpyxl import Workbook
 from pyedb import Edb
 
 
-def export_stackup(edb_obj, xlsx_path):
+def export_stackup(edb_obj, xlsx_path, unit="mm"):
     data = []
     for layer_name, layer in edb_obj.stackup.stackup_layers.items():
         mat = edb_obj.materials.materials[layer.material]
@@ -16,12 +16,15 @@ def export_stackup(edb_obj, xlsx_path):
             permittivity = mat.permittivity
             loss_tangent = mat.dielectric_loss_tangent
             conductivity = ""
-        thickness_mm = layer.thickness * 1000.0
+        if unit == "mil":
+            thickness = layer.thickness * 1000.0 / 0.0254
+        else:
+            thickness = layer.thickness * 1000.0
         data.append(
             [
                 layer_name,
                 layer.type,
-                thickness_mm,
+                thickness,
                 permittivity,
                 loss_tangent,
                 conductivity,
@@ -30,10 +33,11 @@ def export_stackup(edb_obj, xlsx_path):
     wb = Workbook()
     ws = wb.active
     ws.title = "Stackup"
+    ws.append(["unit", unit])
     header = [
         "Layer Name",
         "Type",
-        "Thickness (mm)",
+        f"Thickness ({unit})",
         "Permittivity",
         "Loss Tangent",
         "Conductivity (S/m)",
@@ -52,6 +56,9 @@ def run(job_path, data=None, files=None):
     os.makedirs(input_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
 
+    unit = "mm"
+    if data:
+        unit = data.get("unit", "mm")
     brd = files.get("brd_file") if files else None
     if brd and brd.filename:
         brd_path = os.path.join(input_dir, brd.filename)
@@ -65,5 +72,5 @@ def run(job_path, data=None, files=None):
 
         # Export the stackup to Excel
         xlsx_path = os.path.join(output_dir, "stackup.xlsx")
-        export_stackup(edb, xlsx_path)
+        export_stackup(edb, xlsx_path, unit=unit)
         edb.close()

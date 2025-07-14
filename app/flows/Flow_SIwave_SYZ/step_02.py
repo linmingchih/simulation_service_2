@@ -8,11 +8,16 @@ def apply_xlsx(xlsx_path, edb_path):
     edb = Edb(edb_path, edbversion="2024.1")
     wb = openpyxl.load_workbook(xlsx_path)
     ws = wb["Stackup"]
-    
+
+    unit = str(ws.cell(row=1, column=2).value or "mm").lower()
+
     material_dic = {}
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        layer_name, layer_type, thickness_mm, permittivity, loss_tangent, conductivity = row
-        thickness_m = float(thickness_mm) / 1000.0
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        layer_name, layer_type, thickness_val, permittivity, loss_tangent, conductivity = row
+        if unit == "mil":
+            thickness_m = float(thickness_val) * 25.4 / 1000.0
+        else:
+            thickness_m = float(thickness_val) / 1000.0
         edb.stackup.stackup_layers[layer_name].thickness = thickness_m
     
         if layer_type == "signal":
