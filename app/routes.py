@@ -359,15 +359,17 @@ def run_step(flow_id, step, job_id):
 
 
     if request.method == 'POST':
-        # Execute the current step if a run() function exists
-        spec = importlib.util.spec_from_file_location(step, step_module)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        if hasattr(module, 'run'):
-            try:
-                module.run(job_path, data=request.form, files=request.files)
-            except TypeError:
-                module.run(job_path, data=request.form)
+        action = request.form.get('action')
+        if action != 'pass':
+            # Execute the current step if a run() function exists
+            spec = importlib.util.spec_from_file_location(step, step_module)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, 'run'):
+                try:
+                    module.run(job_path, data=request.form, files=request.files)
+                except TypeError:
+                    module.run(job_path, data=request.form)
 
         # Determine the next step from flow.json
         next_step = None
