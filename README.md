@@ -11,6 +11,7 @@ of a simulation service.
    python -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
+   # waitress is included in requirements for serving the app
    ```
 2. Run the application:
    ```bash
