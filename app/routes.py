@@ -470,9 +470,11 @@ def run_step(flow_id, step, job_id):
                     pass
         nets = selected_nets
         info_lines = []
+        if selected_nets:
+            info_lines.append('<strong>Input Nets:</strong> ' + ', '.join(selected_nets))
         if zip_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=zip_file)
-            info_lines.append(f'Output: <a href="{url}" download>{zip_file}</a>')
+            info_lines.append(f'<strong>Output:</strong> <a href="{url}" download>{zip_file}</a>')
 
     else:
         nets = None
