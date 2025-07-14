@@ -11,10 +11,16 @@
   </div>
   <div class="mb-3">
     <label class="form-label">Thickness Unit</label>
-    <select class="form-select" name="unit">
-      <option value="mm" selected>mm</option>
-      <option value="mil">mil</option>
-    </select>
+    <div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="unit" id="unit-mm" value="mm" checked>
+        <label class="form-check-label" for="unit-mm">mm</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="unit" id="unit-mil" value="mil">
+        <label class="form-check-label" for="unit-mil">mil</label>
+      </div>
+    </div>
   </div>
   <button type="submit" class="btn btn-primary" id="apply-btn">Apply</button>
 </form>
