@@ -21,6 +21,10 @@ of a simulation service.
 User accounts are stored in `users.json` and loaded on startup, so any users
 added through the admin interface will persist across restarts.
 
+Each user can also edit personal settings such as AEDT/EDB versions, language,
+and color scheme from the *Settings* page after logging in. These preferences
+are saved in `users.json` for future sessions.
+
 ## Project Structure
 
 - `app/` - Application package

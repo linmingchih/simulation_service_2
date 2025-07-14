@@ -14,9 +14,21 @@ USERS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'users.json')
 GROUPS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'groups.json')
 os.makedirs(JOB_DIR, exist_ok=True)
 
+DEFAULT_CONFIG = {
+    'aedt_version': '2025.1',
+    'edb_version': '2024.1',
+    'language': 'English',
+    'scheme': 'Light',
+}
+
+
+def _default_config():
+    return DEFAULT_CONFIG.copy()
+
+
 DEFAULT_USERS = {
-    'admin': {'password': 'admin', 'role': 'admin'},
-    'abc': {'password': '1234', 'role': 'user'},
+    'admin': {'password': 'admin', 'role': 'admin', 'config': _default_config()},
+    'abc': {'password': '1234', 'role': 'user', 'config': _default_config()},
 }
 
 DEFAULT_GROUPS = {
@@ -28,7 +40,15 @@ def _load_users():
     if os.path.isfile(USERS_FILE):
         try:
             with open(USERS_FILE) as f:
-                return json.load(f)
+                data = json.load(f)
+                for u in data.values():
+                    cfg = u.get('config')
+                    if not isinstance(cfg, dict):
+                        u['config'] = _default_config()
+                    else:
+                        for k, v in DEFAULT_CONFIG.items():
+                            cfg.setdefault(k, v)
+                return data
         except json.JSONDecodeError:
             pass
     # Ensure the file exists with defaults if loading failed
@@ -62,7 +82,19 @@ def save_groups():
 
 def save_users():
     with open(USERS_FILE, 'w') as f:
-        json.dump(USERS, f)
+        json.dump(USERS, f, indent=2)
+
+
+def _ensure_user_config(username):
+    user = USERS.get(username)
+    if not user:
+        return
+    cfg = user.get('config')
+    if not isinstance(cfg, dict):
+        user['config'] = _default_config()
+    else:
+        for k, v in DEFAULT_CONFIG.items():
+            cfg.setdefault(k, v)
 
 main_bp = Blueprint('main', __name__)
 
@@ -70,6 +102,7 @@ main_bp = Blueprint('main', __name__)
 def current_user():
     username = session.get('username')
     if username in USERS:
+        _ensure_user_config(username)
         user = USERS[username].copy()
         user['username'] = username
         return user
@@ -445,3 +478,19 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('main.login'))
+
+
+@main_bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def user_config():
+    user = current_user()
+    username = user['username']
+    cfg = USERS[username].setdefault('config', _default_config())
+    if request.method == 'POST':
+        cfg['aedt_version'] = request.form.get('aedt_version', cfg['aedt_version']).strip()
+        cfg['edb_version'] = request.form.get('edb_version', cfg['edb_version']).strip()
+        cfg['language'] = request.form.get('language', cfg['language'])
+        cfg['scheme'] = request.form.get('scheme', cfg['scheme'])
+        save_users()
+        return redirect(url_for('main.user_config'))
+    return render_template('user_config.html', config=cfg)
