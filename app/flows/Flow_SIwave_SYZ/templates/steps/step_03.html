@@ -13,7 +13,7 @@
         <tr>
           <td>{{ part }}</td>
           <td>
-            <input type="text" class="form-control form-control-sm rename-input" name="new_{{ part }}" data-original="{{ part }}" placeholder="Rename {{ part }}" value="">
+            <input type="text" class="form-control form-control-sm rename-input" name="new_{{ part }}" data-original="{{ part }}" placeholder="Rename {{ part }}" value="{{ renamed_map.get(part, part) }}">
           </td>
         </tr>
       {% endfor %}
@@ -31,21 +31,30 @@ document.addEventListener('DOMContentLoaded', function () {
   function validate() {
     const counts = {};
     inputs.forEach(inp => {
-      const name = (inp.value.trim() || inp.dataset.original).toLowerCase();
-      counts[name] = (counts[name] || 0) + 1;
+      const val = inp.value.trim() || inp.dataset.original;
+      const key = val.toLowerCase();
+      counts[key] = (counts[key] || 0) + 1;
     });
 
     let valid = true;
     inputs.forEach(inp => {
       const typed = inp.value.trim();
-      const finalName = (typed || inp.dataset.original).toLowerCase();
+      const original = inp.dataset.original;
+      const finalName = typed || original;
+      const row = inp.closest('tr');
       inp.classList.remove('is-valid', 'is-invalid');
+      row.classList.remove('table-danger');
       inp.removeAttribute('title');
-      if (counts[finalName] > 1) {
+
+      if (counts[finalName.toLowerCase()] > 1) {
         inp.classList.add('is-invalid');
         inp.setAttribute('title', 'Duplicate name');
         valid = false;
-      } else if (typed) {
+      }
+
+      if (!typed || typed === original) {
+        row.classList.add('table-danger');
+      } else if (counts[finalName.toLowerCase()] === 1) {
         inp.classList.add('is-valid');
       }
     });

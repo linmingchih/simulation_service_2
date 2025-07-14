@@ -432,9 +432,9 @@ def run_step(flow_id, step, job_id):
         if os.path.isdir(edb_dir):
             try:
                 edb = Edb(edb_dir, edbversion='2024.1')
-                type_part = defaultdict(list)
+                type_part = defaultdict(set)
                 for cname, comp in edb.components.components.items():
-                    type_part[comp.type].append(comp.part_name)
+                    type_part[comp.type].add(comp.part_name)
                 categories = {
                     'IC Parts': sorted(type_part.get('IC', [])),
                     'IO Parts': sorted(type_part.get('IO', [])),
