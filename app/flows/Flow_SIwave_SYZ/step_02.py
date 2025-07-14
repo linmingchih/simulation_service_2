@@ -3,9 +3,10 @@ import shutil
 import zipfile
 import openpyxl
 from pyedb import Edb
+from app.utils import is_file_locked
 
-def apply_xlsx(xlsx_path, edb_path):
-    edb = Edb(edb_path, edbversion="2024.1")
+def apply_xlsx(xlsx_path, edb_path, edb_version="2024.1"):
+    edb = Edb(edb_path, edbversion=edb_version)
     wb = openpyxl.load_workbook(xlsx_path)
     ws = wb["Stackup"]
 
@@ -41,21 +42,32 @@ def apply_xlsx(xlsx_path, edb_path):
     edb.close_edb()
 
 
-def run(job_path, data=None, files=None):
+def run(job_path, data=None, files=None, config=None):
     input_dir = os.path.join(job_path, 'input')
     output_dir = os.path.join(job_path, 'output')
     os.makedirs(input_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
 
+    edb_version = (config or {}).get("edb_version", "2024.1")
     xlsx = files.get('xlsx_file') if files else None
     if xlsx and xlsx.filename:
         x_path = os.path.join(input_dir, xlsx.filename)
         xlsx.save(x_path)
+
+        if is_file_locked(x_path) or not os.access(x_path, os.W_OK):
+            os.remove(x_path)
+            return {
+                'error': (
+                    '\u26a0\ufe0f The selected Excel file is currently locked or '
+                    'in use. Please close it and try again.'
+                )
+            }
+
         shutil.copy(x_path, os.path.join(output_dir, 'updated.xlsx'))
 
         edb_dir = os.path.join(output_dir, 'design.aedb')
         if os.path.isdir(edb_dir):
-            apply_xlsx(x_path, edb_dir)
+            apply_xlsx(x_path, edb_dir, edb_version)
 
             # Create a zipped copy of the updated AEDB for easy download
             zip_path = os.path.join(output_dir, 'updated_pyedb.zip')
