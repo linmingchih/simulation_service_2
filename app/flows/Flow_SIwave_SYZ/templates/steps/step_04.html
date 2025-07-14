@@ -11,7 +11,7 @@
 
 <h5>Output</h5>
 {% if zip_file %}
-<a href="{{ url_for('main.get_job_file', job_id=job_id, filename=zip_file) }}" class="btn btn-primary" download>Download {{ zip_file }}</a>
+<p>{{ zip_file }} generated.</p>
 {% else %}
 <p>No cutout generated.</p>
 {% endif %}
