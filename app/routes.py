@@ -2,6 +2,7 @@ import json
 import uuid
 import os
 import importlib.util
+import zipfile
 from app.utils import remove_dir
 from pyedb import Edb
 from collections import defaultdict
@@ -396,6 +397,16 @@ def run_step(flow_id, step, job_id):
             return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
+    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
+        edb_dir = os.path.join(output_dir, 'design.aedb')
+        zip_path = os.path.join(output_dir, 'design.aedb.zip')
+        if os.path.isdir(edb_dir) and not os.path.isfile(zip_path):
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for root, dirs, files in os.walk(edb_dir):
+                    for file in files:
+                        abs_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(abs_path, os.path.dirname(edb_dir))
+                        zf.write(abs_path, rel_path)
     output_files = []
     if os.path.isdir(output_dir):
         for f in os.listdir(output_dir):
@@ -505,12 +516,14 @@ def run_step(flow_id, step, job_id):
             except Exception:
                 nets = []
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
-        zip_file = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
+        cutout_zip = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
+        design_zip = 'design.aedb.zip' if os.path.isfile(os.path.join(output_dir, 'design.aedb.zip')) else None
         nets = None
         info_lines = []
-        if zip_file:
-            url = url_for('main.get_job_file', job_id=job_id, filename=zip_file)
-            info_lines.append(f'<strong>Output:</strong> <a href="{url}" download>{zip_file}</a>')
+        for zf in (cutout_zip, design_zip):
+            if zf:
+                url = url_for('main.get_job_file', job_id=job_id, filename=zf)
+                info_lines.append(f'<strong>Output:</strong> <a href="{url}" download>{zf}</a>')
 
     else:
         nets = None
