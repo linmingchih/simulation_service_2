@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>{{ flow_name }} - {{ job_topic }} : Step 4 - Cutout Result</h2>
+
+<h5>Input Nets</h5>
+<ul>
+  {% for net in selected_nets %}
+  <li>{{ net }}</li>
+  {% endfor %}
+</ul>
+
+<h5>Output</h5>
+{% if zip_file %}
+<a href="{{ url_for('main.get_job_file', job_id=job_id, filename=zip_file) }}" class="btn btn-primary" download>Download {{ zip_file }}</a>
+{% else %}
+<p>No cutout generated.</p>
+{% endif %}
+
+<a href="{{ url_for('main.deck') }}" class="btn btn-secondary mt-3">Back to Deck</a>
+{% endblock %}

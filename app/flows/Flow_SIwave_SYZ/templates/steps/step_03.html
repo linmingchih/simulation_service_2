@@ -27,7 +27,7 @@
       {% endfor %}
     </tbody>
   </table>
-  <button type="submit" class="btn btn-primary">Next</button>
+  <button type="submit" class="btn btn-primary" id="apply-btn">Apply</button>
 </form>
 
 <script>
@@ -100,11 +100,20 @@
         }
       });
 
-      pwrBox.addEventListener('change', () => {
-        if (pwrBox.checked) {
-          portBox.checked = false;
-        }
-      });
+    pwrBox.addEventListener('change', () => {
+      if (pwrBox.checked) {
+        portBox.checked = false;
+      }
+    });
+  });
+
+    const form = document.querySelector('form');
+    const btn = document.getElementById('apply-btn');
+    form.addEventListener('submit', () => {
+      btn.disabled = true;
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-warning');
+      btn.textContent = 'Running...';
     });
   });
 </script>
