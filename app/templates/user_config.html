@@ -1,29 +1,29 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>User Settings</h2>
+<h2>{{ t('User Settings') }}</h2>
 <form method="post">
   <div class="mb-3">
-    <label class="form-label">AEDT Version</label>
+    <label class="form-label">{{ t('AEDT Version') }}</label>
     <input type="text" name="aedt_version" class="form-control" value="{{ config.aedt_version }}" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">EDB Version</label>
+    <label class="form-label">{{ t('EDB Version') }}</label>
     <input type="text" name="edb_version" class="form-control" value="{{ config.edb_version }}" required>
   </div>
   <div class="mb-3">
-    <label class="form-label">Language</label>
+    <label class="form-label">{{ t('Language') }}</label>
     <select name="language" class="form-select">
-      <option value="English" {% if config.language == 'English' %}selected{% endif %}>English</option>
-      <option value="Traditional Chinese" {% if config.language == 'Traditional Chinese' %}selected{% endif %}>Traditional Chinese</option>
+      <option value="English" {% if config.language == 'English' %}selected{% endif %}>{{ t('English') }}</option>
+      <option value="Traditional Chinese" {% if config.language == 'Traditional Chinese' %}selected{% endif %}>{{ t('Traditional Chinese') }}</option>
     </select>
   </div>
   <div class="mb-3">
-    <label class="form-label">Scheme</label>
+    <label class="form-label">{{ t('Scheme') }}</label>
     <select name="scheme" class="form-select">
-      <option value="Dark" {% if config.scheme == 'Dark' %}selected{% endif %}>Dark</option>
-      <option value="Light" {% if config.scheme == 'Light' %}selected{% endif %}>Light</option>
+      <option value="Dark" {% if config.scheme == 'Dark' %}selected{% endif %}>{{ t('Dark') }}</option>
+      <option value="Light" {% if config.scheme == 'Light' %}selected{% endif %}>{{ t('Light') }}</option>
     </select>
   </div>
-  <button type="submit" class="btn btn-primary">Save</button>
+  <button type="submit" class="btn btn-primary">{{ t('Save') }}</button>
 </form>
 {% endblock %}

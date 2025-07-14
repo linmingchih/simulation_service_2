@@ -1,27 +1,27 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>User Management</h2>
+<h2>{{ t('User Management') }}</h2>
 <form method="post" class="mb-3">
   <div class="row g-2">
     <div class="col-auto">
-      <input type="text" name="username" placeholder="Username" class="form-control" required>
+      <input type="text" name="username" placeholder="{{ t('Username') }}" class="form-control" required>
     </div>
     <div class="col-auto">
-      <input type="password" name="password" placeholder="Password" class="form-control" required>
+      <input type="password" name="password" placeholder="{{ t('Password') }}" class="form-control" required>
     </div>
     <div class="col-auto">
       <select name="role" class="form-select">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
+        <option value="user">{{ t('User') }}</option>
+        <option value="admin">{{ t('Admin') }}</option>
       </select>
     </div>
     <div class="col-auto">
-      <button type="submit" class="btn btn-primary">Add User</button>
+      <button type="submit" class="btn btn-primary">{{ t('Add User') }}</button>
     </div>
   </div>
 </form>
 <table class="table">
-  <thead><tr><th>Username</th><th>Role</th><th></th></tr></thead>
+  <thead><tr><th>{{ t('Username') }}</th><th>{{ t('Role') }}</th><th></th></tr></thead>
   <tbody>
   {% for username, info in users.items() %}
   <tr>
@@ -30,7 +30,7 @@
     <td>
       {% if username != 'admin' %}
       <form action="{{ url_for('admin.delete_user', username=username) }}" method="post" style="display:inline">
-        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
       </form>
       {% endif %}
     </td>

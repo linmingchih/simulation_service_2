@@ -1,15 +1,15 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>Jobs Information</h2>
+<h2>{{ t('Jobs Information') }}</h2>
 {% if jobs %}
 <table class="table">
   <thead>
       <tr>
-        <th>User</th>
-        <th>Flow Name</th>
-        <th>Topic</th>
-        <th>Time</th>
-        <th>Step</th>
+        <th>{{ t('User') }}</th>
+        <th>{{ t('Flow Name') }}</th>
+        <th>{{ t('Topic') }}</th>
+        <th>{{ t('Time') }}</th>
+        <th>{{ t('Step') }}</th>
         <th></th>
       </tr>
     </thead>
@@ -23,7 +23,7 @@
       <td>{{ job.step }}</td>
       <td>
         <form action="{{ url_for('admin.delete_job', job_id=job.id) }}" method="post" style="display:inline" onsubmit="return confirmDelete();">
-          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
         </form>
       </td>
     </tr>
@@ -31,6 +31,6 @@
   </tbody>
 </table>
 {% else %}
-<p>No jobs found.</p>
+<p>{{ t('No jobs found.') }}</p>
 {% endif %}
 {% endblock %}

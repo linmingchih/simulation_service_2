@@ -1,16 +1,16 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h1>Available Flows</h1>
+<h1>{{ t('Available Flows') }}</h1>
 {% if session.get('username') == 'admin' %}
-<p><a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">Admin Dashboard</a></p>
+<p><a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">{{ t('Admin Dashboard') }}</a></p>
 {% endif %}
 <div class="mb-3" style="max-width:300px;">
   <select id="group-select" class="form-select form-select-sm">
-    <option value="all" {% if selected_group == 'all' %}selected{% endif %}>All Groups</option>
+    <option value="all" {% if selected_group == 'all' %}selected{% endif %}>{{ t('All Groups') }}</option>
     {% for g in groups %}
     <option value="{{ g }}" {% if selected_group == g %}selected{% endif %}>{{ g }}</option>
     {% endfor %}
-    <option value="Ungrouped" {% if selected_group == 'Ungrouped' %}selected{% endif %}>Ungrouped</option>
+    <option value="Ungrouped" {% if selected_group == 'Ungrouped' %}selected{% endif %}>{{ t('Ungrouped') }}</option>
   </select>
 </div>
 <ul class="list-group" id="flows-list">
@@ -18,22 +18,22 @@
   <li class="list-group-item d-flex justify-content-between align-items-center" data-group="{{ flow.group or 'Ungrouped' }}">
     {{ flow.name }}
     <form action="{{ url_for('main.start_flow', flow_id=flow.id) }}" method="post" class="d-flex ms-auto" style="max-width: 500px;">
-      <input type="text" name="topic" class="form-control me-2" placeholder="Enter topic" oninput="this.nextElementSibling.disabled = this.value.trim() === ''" required>
-      <button type="submit" class="btn btn-primary btn-sm" disabled>Start</button>
+      <input type="text" name="topic" class="form-control me-2" placeholder="{{ t('Enter topic') }}" oninput="this.nextElementSibling.disabled = this.value.trim() === ''" required>
+      <button type="submit" class="btn btn-primary btn-sm" disabled>{{ t('Start') }}</button>
     </form>
   </li>
   {% endfor %}
 </ul>
 
-<h2 class="mt-4">Existing Jobs</h2>
+<h2 class="mt-4">{{ t('Existing Jobs') }}</h2>
 {% if jobs %}
 <table class="table">
   <thead>
     <tr>
-      <th>Flow Name</th>
-      <th>Topic</th>
-      <th>Time</th>
-      <th>Step</th>
+      <th>{{ t('Flow Name') }}</th>
+      <th>{{ t('Topic') }}</th>
+      <th>{{ t('Time') }}</th>
+      <th>{{ t('Step') }}</th>
       <th></th>
     </tr>
   </thead>
@@ -43,15 +43,15 @@
       <td>{{ job.flow_id }}</td>
       <td>{{ job.topic }}</td>
       <td>{{ job.created_at }}</td>
-      <td>{{ 'Completed' if job.step == 'completed' else job.step }}</td>
+      <td>{{ t('Completed') if job.step == 'completed' else job.step }}</td>
       <td>
         {% if job.step != 'completed' %}
-        <a href="{{ url_for('main.run_step', flow_id=job.flow_id, step=job.step, job_id=job.id) }}" class="btn btn-sm btn-primary me-2">Resume</a>
+        <a href="{{ url_for('main.run_step', flow_id=job.flow_id, step=job.step, job_id=job.id) }}" class="btn btn-sm btn-primary me-2">{{ t('Resume') }}</a>
         {% else %}
-        <span class="text-success me-2">Done</span>
+        <span class="text-success me-2">{{ t('Done') }}</span>
         {% endif %}
         <form action="{{ url_for('main.delete_job', job_id=job.id) }}" method="post" style="display:inline" onsubmit="return confirmDelete();">
-          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
         </form>
       </td>
     </tr>
@@ -59,7 +59,7 @@
   </tbody>
 </table>
 {% else %}
-<p>No jobs available.</p>
+<p>{{ t('No jobs available.') }}</p>
 {% endif %}
 <script>
   function fetchJobs() {
@@ -76,16 +76,16 @@
       const tr = document.createElement('tr');
       const resumeUrl = `/flow/${job.flow_id}/${job.step}/${job.id}`;
       const deleteUrl = `/job/${job.id}/delete`;
-      const stepText = job.step === 'completed' ? 'Completed' : job.step;
+      const stepText = job.step === 'completed' ? "{{ t('Completed') }}" : job.step;
       tr.innerHTML = `
         <td>${job.flow_id}</td>
         <td>${job.topic}</td>
         <td>${job.created_at}</td>
         <td>${stepText}</td>
         <td>
-          ${job.step !== 'completed' ? `<a href="${resumeUrl}" class="btn btn-sm btn-primary me-2">Resume</a>` : '<span class="text-success me-2">Done</span>'}
+          ${job.step !== 'completed' ? `<a href="${resumeUrl}" class="btn btn-sm btn-primary me-2">{{ t('Resume') }}</a>` : '<span class="text-success me-2">{{ t('Done') }}</span>'}
           <form action="${deleteUrl}" method="post" style="display:inline" onsubmit="return confirmDelete();">
-            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
           </form>
         </td>`;
       tbody.appendChild(tr);

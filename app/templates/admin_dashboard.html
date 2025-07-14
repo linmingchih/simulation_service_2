@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>Admin Dashboard</h2>
-<p>Welcome, {{ session['username'] }}.</p>
+<h2>{{ t('Admin Dashboard') }}</h2>
+<p>{{ t('Welcome') }}, {{ session['username'] }}.</p>
 <ul class="list-group">
-  <li class="list-group-item"><a href="{{ url_for('admin.users') }}">User Management (Add User)</a></li>
-  <li class="list-group-item"><a href="{{ url_for('admin.jobs') }}">Jobs Information</a></li>
-  <li class="list-group-item"><a href="{{ url_for('admin.flows') }}">Flow Management</a></li>
-  <li class="list-group-item"><a href="{{ url_for('admin.groups') }}">Group Management</a></li>
+  <li class="list-group-item"><a href="{{ url_for('admin.users') }}">{{ t('User Management (Add User)') }}</a></li>
+  <li class="list-group-item"><a href="{{ url_for('admin.jobs') }}">{{ t('Jobs Information') }}</a></li>
+  <li class="list-group-item"><a href="{{ url_for('admin.flows') }}">{{ t('Flow Management') }}</a></li>
+  <li class="list-group-item"><a href="{{ url_for('admin.groups') }}">{{ t('Group Management') }}</a></li>
 </ul>
 {% endblock %}

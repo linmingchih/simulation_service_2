@@ -1,6 +1,8 @@
 from flask import Flask
 import os
 from jinja2 import ChoiceLoader, PrefixLoader, FileSystemLoader
+from .translation import translate
+from .routes import current_user
 
 
 def _register_flow_templates(app):
@@ -27,6 +29,15 @@ def create_app():
     app.config['SECRET_KEY'] = 'secret'
 
     _register_flow_templates(app)
+
+    def _t(text):
+        user = current_user()
+        lang = 'English'
+        if user:
+            lang = user.get('config', {}).get('language', 'English')
+        return translate(text, lang)
+
+    app.jinja_env.globals['t'] = _t
 
     from .routes import main_bp
     from .admin import admin_bp

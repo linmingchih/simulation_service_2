@@ -1,25 +1,25 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>Group Management</h2>
+<h2>{{ t('Group Management') }}</h2>
 <form action="{{ url_for('admin.groups') }}" method="post" class="mb-3 d-flex" style="max-width:400px;">
-  <input type="text" name="group" class="form-control me-2" placeholder="New group" required>
-  <button type="submit" class="btn btn-primary btn-sm">Add</button>
+  <input type="text" name="group" class="form-control me-2" placeholder="{{ t('New group') }}" required>
+  <button type="submit" class="btn btn-primary btn-sm">{{ t('Add') }}</button>
 </form>
 <ul class="list-group mb-4">
   {% for g in groups.keys() %}
   <li class="list-group-item">
     <form action="{{ url_for('admin.rename_group', group=g) }}" method="post" class="d-inline-flex align-items-center me-2">
       <input type="text" name="new_name" value="{{ g }}" class="form-control form-control-sm me-2" required>
-      <button type="submit" class="btn btn-sm btn-secondary me-2">Rename</button>
+      <button type="submit" class="btn btn-sm btn-secondary me-2">{{ t('Rename') }}</button>
     </form>
-    <form action="{{ url_for('admin.delete_group', group=g) }}" method="post" style="display:inline" onsubmit="return confirm('Delete group {{ g }}?');">
-      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+    <form action="{{ url_for('admin.delete_group', group=g) }}" method="post" style="display:inline" onsubmit="return confirm('{{ t('Delete group') }} {{ g }}?');">
+      <button type="submit" class="btn btn-sm btn-danger">{{ t('Delete') }}</button>
     </form>
   </li>
   {% endfor %}
 </ul>
 <table class="table">
-  <thead><tr><th>Flow ID</th><th>Flow Name</th><th>Group</th></tr></thead>
+  <thead><tr><th>{{ t('Flow ID') }}</th><th>{{ t('Flow Name') }}</th><th>{{ t('Group') }}</th></tr></thead>
   <tbody>
   {% for flow in flows %}
   <tr>
@@ -29,7 +29,7 @@
       <form action="{{ url_for('admin.move_flow') }}" method="post">
         <input type="hidden" name="flow_id" value="{{ flow.id }}">
         <select name="group" onchange="this.form.submit()" class="form-select form-select-sm">
-          <option value="" {% if not flow.group %}selected{% endif %}>Ungrouped</option>
+          <option value="" {% if not flow.group %}selected{% endif %}>{{ t('Ungrouped') }}</option>
           {% for g in groups.keys() %}
           <option value="{{ g }}" {% if flow.group == g %}selected{% endif %}>{{ g }}</option>
           {% endfor %}
