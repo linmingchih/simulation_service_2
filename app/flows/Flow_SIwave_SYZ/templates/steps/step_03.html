@@ -1,7 +1,29 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Finish</h2>
-<p>Processing completed for {{ flow_id }}.</p>
-<p>The information panel lists Step 1 and Step 2 input and output files.</p>
-<a href="{{ url_for('main.deck') }}" class="btn btn-secondary">Back to Deck</a>
+<h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Cutout</h2>
+
+<form method="post">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Net Name</th>
+        <th>Import</th>
+        <th>Port</th>
+        <th>Pwr/Gnd</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for net in nets %}
+      <tr>
+        <td>{{ net }}</td>
+        <td><input type="checkbox" name="import_{{ net }}"></td>
+        <td><input type="checkbox" name="port_{{ net }}"></td>
+        <td><input type="checkbox" name="pwr_{{ net }}"></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-primary">Next</button>
+</form>
+
 {% endblock %}

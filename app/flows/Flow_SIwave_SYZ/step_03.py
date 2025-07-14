@@ -1,18 +1,23 @@
 import os
 import json
+from pyedb import Edb
 
 
 def run(job_path, data=None, files=None):
     output_dir = os.path.join(job_path, "output")
     os.makedirs(output_dir, exist_ok=True)
 
-    file_list = []
-    for f in os.listdir(output_dir):
-        p = os.path.join(output_dir, f)
-        if os.path.isfile(p):
-            file_list.append(f)
-    summary = {"output_files": file_list}
-    with open(os.path.join(output_dir, "summary.json"), "w") as fp:
-        json.dump(summary, fp)
+    nets = []
+    edb_dir = os.path.join(output_dir, "design.aedb")
+    if os.path.isdir(edb_dir):
+        try:
+            edb = Edb(edb_dir, edbversion="2024.1")
+            nets = list(edb.nets.nets.keys())
+            edb.close_edb()
+        except Exception:
+            nets = []
+
+    with open(os.path.join(output_dir, "nets.json"), "w") as fp:
+        json.dump({"nets": nets}, fp)
 
     return {}
