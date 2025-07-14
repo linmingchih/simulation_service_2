@@ -506,19 +506,8 @@ def run_step(flow_id, step, job_id):
                 nets = []
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
         zip_file = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
-        selected_nets = []
-        info_path = os.path.join(output_dir, 'cutout_info.json')
-        if os.path.isfile(info_path):
-            with open(info_path) as fp:
-                try:
-                    data = json.load(fp)
-                    selected_nets = data.get('selected_nets', [])
-                except json.JSONDecodeError:
-                    pass
-        nets = selected_nets
+        nets = None
         info_lines = []
-        if selected_nets:
-            info_lines.append('<strong>Input Nets:</strong> ' + ', '.join(selected_nets))
         if zip_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=zip_file)
             info_lines.append(f'<strong>Output:</strong> <a href="{url}" download>{zip_file}</a>')
