@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block content %}
 <h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Rename Components</h2>
-<form method="post">
+<form method="post" id="rename-form">
   {% for group, parts in categories.items() %}
     <h5>{{ group }}</h5>
     <table class="table table-sm">
@@ -13,18 +13,51 @@
         <tr>
           <td>{{ part }}</td>
           <td>
-            {% if renamed_map.get(part) %}
-              <span class="text-danger">{{ renamed_map[part] }}</span>
-            {% else %}
-              <input type="text" class="form-control form-control-sm" name="new_{{ part }}">
-            {% endif %}
+            <input type="text" class="form-control form-control-sm rename-input" name="new_{{ part }}" data-original="{{ part }}" placeholder="Rename {{ part }}" value="">
           </td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
   {% endfor %}
-  <button type="submit" name="action" value="apply" class="btn btn-primary">Apply</button>
-  <button type="submit" name="action" value="next" class="btn btn-secondary ms-2">Next Step</button>
+  <button type="submit" name="action" value="apply" id="apply-btn" class="btn btn-primary" disabled>Apply</button>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const inputs = document.querySelectorAll('.rename-input');
+  const applyBtn = document.getElementById('apply-btn');
+
+  function validate() {
+    const counts = {};
+    inputs.forEach(inp => {
+      const name = (inp.value.trim() || inp.dataset.original).toLowerCase();
+      counts[name] = (counts[name] || 0) + 1;
+    });
+
+    let valid = true;
+    inputs.forEach(inp => {
+      const typed = inp.value.trim();
+      const finalName = (typed || inp.dataset.original).toLowerCase();
+      inp.classList.remove('is-valid', 'is-invalid');
+      inp.removeAttribute('title');
+      if (counts[finalName] > 1) {
+        inp.classList.add('is-invalid');
+        inp.setAttribute('title', 'Duplicate name');
+        valid = false;
+      } else if (typed) {
+        inp.classList.add('is-valid');
+      }
+    });
+
+    applyBtn.disabled = !valid;
+  }
+
+  inputs.forEach(inp => {
+    inp.addEventListener('input', validate);
+  });
+
+  validate();
+});
+</script>
 {% endblock %}

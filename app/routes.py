@@ -369,8 +369,6 @@ def run_step(flow_id, step, job_id):
             except TypeError:
                 module.run(job_path, data=request.form)
 
-        action = request.form.get('action')
-
         # Determine the next step from flow.json
         next_step = None
         flow_json = os.path.join(flow_path, 'flow.json')
@@ -383,23 +381,17 @@ def run_step(flow_id, step, job_id):
                     if idx + 1 < len(steps):
                         next_step = steps[idx + 1]
 
-        if flow_id == 'Flow_SIwave_SYZ' and step == 'step_03' and action == 'apply':
-            meta['step'] = 'step_03'
-            with open(meta_file, 'w') as f:
-                json.dump(meta, f)
-            return redirect(url_for('main.run_step', flow_id=flow_id, step='step_03', job_id=job_id))
+        if next_step:
+            meta['step'] = next_step
         else:
-            if next_step:
-                meta['step'] = next_step
-            else:
-                meta['step'] = 'completed'
-            with open(meta_file, 'w') as f:
-                json.dump(meta, f)
+            meta['step'] = 'completed'
+        with open(meta_file, 'w') as f:
+            json.dump(meta, f)
 
-            if next_step:
-                return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
-            else:
-                return redirect(url_for('main.deck'))
+        if next_step:
+            return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
+        else:
+            return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
     output_files = []
