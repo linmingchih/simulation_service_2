@@ -400,6 +400,7 @@ def run_step(flow_id, step, job_id):
                 output_files.append(f)
 
     info_lines = None
+    nets = None
     if flow_id == 'Flow_SIwave_SYZ' and step == 'step_02':
         brd_file = None
         input_dir = os.path.join(job_path, 'input')
