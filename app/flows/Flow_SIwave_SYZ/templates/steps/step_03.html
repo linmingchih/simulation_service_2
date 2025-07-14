@@ -3,7 +3,11 @@
 <h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Cutout</h2>
 
 <form method="post">
-  <table class="table table-sm">
+  <div class="mb-2">
+    <input type="text" id="filter-input" class="form-control form-control-sm"
+           placeholder="Filter net names (regex)">
+  </div>
+  <table class="table table-sm" id="nets-table">
     <thead>
       <tr>
         <th>Net Name</th>
@@ -25,5 +29,84 @@
   </table>
   <button type="submit" class="btn btn-primary">Next</button>
 </form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('nets-table');
+    const tbody = table.querySelector('tbody');
+    const filterInput = document.getElementById('filter-input');
+
+    // Regex filter
+    filterInput.addEventListener('input', () => {
+      let pattern = null;
+      try {
+        pattern = new RegExp(filterInput.value, 'i');
+      } catch (e) {}
+      Array.from(tbody.rows).forEach(row => {
+        const name = row.cells[0].textContent;
+        row.style.display = !pattern || pattern.test(name) ? '' : 'none';
+      });
+    });
+
+    // Sortable columns
+    const sortDir = {};
+    table.querySelectorAll('th').forEach((th, idx) => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const dir = sortDir[idx] ? -sortDir[idx] : 1;
+        sortDir[idx] = dir;
+        const rows = Array.from(tbody.rows);
+        rows.sort((a, b) => {
+          const aCell = a.cells[idx];
+          const bCell = b.cells[idx];
+          const aVal = aCell.querySelector('input') ?
+                       aCell.querySelector('input').checked.toString() :
+                       aCell.textContent;
+          const bVal = bCell.querySelector('input') ?
+                       bCell.querySelector('input').checked.toString() :
+                       bCell.textContent;
+          return aVal.localeCompare(bVal, undefined, {numeric: true}) * dir;
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      });
+    });
+
+    // Row highlight and toggle rules
+    Array.from(tbody.rows).forEach(row => {
+      const importBox = row.querySelector('input[name^="import_"]');
+      const portBox = row.querySelector('input[name^="port_"]');
+      const pwrBox = row.querySelector('input[name^="pwr_"]');
+
+      function updateState() {
+        if (importBox.checked) {
+          row.classList.add('table-success');
+          portBox.disabled = false;
+          pwrBox.disabled = false;
+        } else {
+          row.classList.remove('table-success');
+          portBox.disabled = true;
+          pwrBox.disabled = true;
+          portBox.checked = false;
+          pwrBox.checked = false;
+        }
+      }
+
+      importBox.addEventListener('change', updateState);
+      updateState();
+
+      portBox.addEventListener('change', () => {
+        if (portBox.checked) {
+          pwrBox.checked = false;
+        }
+      });
+
+      pwrBox.addEventListener('change', () => {
+        if (pwrBox.checked) {
+          portBox.checked = false;
+        }
+      });
+    });
+  });
+</script>
 
 {% endblock %}
