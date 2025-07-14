@@ -1,22 +1,10 @@
 import os
 import json
-import shutil
 import zipfile
-import stat
+from app.utils import remove_dir
 from pyedb import Edb
 
 
-def _remove_dir(path):
-    """Remove directory and handle read-only files on Windows."""
-    def _onerror(func, target, exc):
-        try:
-            os.chmod(target, stat.S_IWRITE)
-            func(target)
-        except Exception:
-            pass
-
-    if os.path.isdir(path):
-        shutil.rmtree(path, onerror=_onerror)
 
 
 def run(job_path, data=None, files=None):
@@ -41,7 +29,7 @@ def run(job_path, data=None, files=None):
 
     if selected_nets:
         cutout_dir = os.path.join(output_dir, "cutout.aedb")
-        _remove_dir(cutout_dir)
+        remove_dir(cutout_dir)
         edb.cutout(
             signal_list=selected_nets,
             reference_list=pwr_nets,

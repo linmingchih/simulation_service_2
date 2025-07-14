@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
-import shutil
+from app.utils import remove_dir
 from .routes import (
     login_required,
     admin_required,
@@ -63,7 +63,7 @@ def jobs():
 def delete_job(job_id):
     job_path = os.path.join(JOB_DIR, job_id)
     if os.path.isdir(job_path):
-        shutil.rmtree(job_path)
+        remove_dir(job_path)
     return redirect(url_for('admin.jobs'))
 
 
