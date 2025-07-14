@@ -3,6 +3,7 @@ import uuid
 import os
 import shutil
 import importlib.util
+from pyedb import Edb
 from functools import wraps
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory, jsonify
@@ -442,6 +443,20 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=zipped_file)
             info_lines.append(f'Step 2 Output: <a href="{url}" download>{zipped_file}</a>')
 
+        # Gather net names from the generated AEDB for display
+        nets = []
+        edb_dir = os.path.join(output_dir, 'design.aedb')
+        if os.path.isdir(edb_dir):
+            try:
+                edb = Edb(edb_dir, edbversion='2024.1')
+                nets = list(edb.nets.nets.keys())
+                edb.close_edb()
+            except Exception:
+                nets = []
+    
+    else:
+        nets = None
+
     input_tree = _dir_tree(os.path.join(job_path, 'input'))
     output_tree = _dir_tree(output_dir)
 
@@ -455,6 +470,7 @@ def run_step(flow_id, step, job_id):
         job_topic=job_topic,
         output_files=output_files,
         info_lines=info_lines,
+        nets=nets,
         input_tree=input_tree,
         output_tree=output_tree,
     )
