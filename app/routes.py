@@ -4,6 +4,7 @@ import os
 import importlib.util
 from app.utils import remove_dir
 from pyedb import Edb
+from collections import defaultdict
 from functools import wraps
 from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, request, session, make_response, send_from_directory, jsonify
@@ -368,6 +369,8 @@ def run_step(flow_id, step, job_id):
             except TypeError:
                 module.run(job_path, data=request.form)
 
+        action = request.form.get('action')
+
         # Determine the next step from flow.json
         next_step = None
         flow_json = os.path.join(flow_path, 'flow.json')
@@ -380,17 +383,23 @@ def run_step(flow_id, step, job_id):
                     if idx + 1 < len(steps):
                         next_step = steps[idx + 1]
 
-        if next_step:
-            meta['step'] = next_step
+        if flow_id == 'Flow_SIwave_SYZ' and step == 'step_03' and action == 'apply':
+            meta['step'] = 'step_03'
+            with open(meta_file, 'w') as f:
+                json.dump(meta, f)
+            return redirect(url_for('main.run_step', flow_id=flow_id, step='step_03', job_id=job_id))
         else:
-            meta['step'] = 'completed'
-        with open(meta_file, 'w') as f:
-            json.dump(meta, f)
+            if next_step:
+                meta['step'] = next_step
+            else:
+                meta['step'] = 'completed'
+            with open(meta_file, 'w') as f:
+                json.dump(meta, f)
 
-        if next_step:
-            return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
-        else:
-            return redirect(url_for('main.deck'))
+            if next_step:
+                return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
+            else:
+                return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
     output_files = []
@@ -420,6 +429,52 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_03':
+        categories = {}
+        renamed_map = {}
+        edb_dir = os.path.join(output_dir, 'design.aedb')
+        if os.path.isdir(edb_dir):
+            try:
+                edb = Edb(edb_dir, edbversion='2024.1')
+                type_part = defaultdict(list)
+                for cname, comp in edb.components.components.items():
+                    type_part[comp.type].append(comp.part_name)
+                categories = {
+                    'IC Parts': sorted(type_part.get('IC', [])),
+                    'IO Parts': sorted(type_part.get('IO', [])),
+                    'Other Parts': sorted(type_part.get('Other', [])),
+                }
+                edb.close_edb()
+            except Exception:
+                categories = {}
+        rename_file = os.path.join(output_dir, 'renamed_components.json')
+        if os.path.isfile(rename_file):
+            try:
+                with open(rename_file) as fp:
+                    renamed_map = json.load(fp)
+            except json.JSONDecodeError:
+                renamed_map = {}
+        nets = None
+        info_lines = []
+        brd_file = None
+        xlsx_input = None
+        input_dir = os.path.join(job_path, 'input')
+        if os.path.isdir(input_dir):
+            for f in os.listdir(input_dir):
+                if f.lower().endswith('.brd') and not brd_file:
+                    brd_file = f
+                if f.lower().endswith('.xlsx'):
+                    xlsx_input = f
+        stackup_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
+        if brd_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
+        if stackup_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=stackup_file)
+            info_lines.append(f'Step 1 Output: <a href="{url}" download>{stackup_file}</a>')
+        if xlsx_input:
+            url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
+            info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
         brd_file = None
         xlsx_input = None
         input_dir = os.path.join(job_path, 'input')
@@ -446,7 +501,6 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=zipped_file)
             info_lines.append(f'Step 2 Output: <a href="{url}" download>{zipped_file}</a>')
 
-        # Gather net names from the generated AEDB for display
         nets = []
         edb_dir = os.path.join(output_dir, 'design.aedb')
         if os.path.isdir(edb_dir):
@@ -456,8 +510,7 @@ def run_step(flow_id, step, job_id):
                 edb.close_edb()
             except Exception:
                 nets = []
-
-    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
         zip_file = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
         selected_nets = []
         info_path = os.path.join(output_dir, 'cutout_info.json')
@@ -497,6 +550,8 @@ def run_step(flow_id, step, job_id):
         output_tree=output_tree,
         selected_nets=selected_nets,
         zip_file=zip_file,
+        categories=locals().get('categories'),
+        renamed_map=locals().get('renamed_map'),
     )
 
 
