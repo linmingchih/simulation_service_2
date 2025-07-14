@@ -6,10 +6,13 @@
 <form method="post" enctype="multipart/form-data">
   <div class="mb-3">
     <label class="form-label">Stackup XLSX</label>
-    <input type="file" class="form-control" name="xlsx_file" required>
+    <input type="file" class="form-control" name="xlsx_file" accept=".xlsx" required>
   </div>
-  <button type="submit" name="action" value="upload" class="btn btn-primary">Upload</button>
-  <button type="submit" name="action" value="pass" class="btn btn-secondary ms-2" formnovalidate>Pass</button>
+  <button type="submit" name="action" value="upload" class="btn btn-primary" {% if disable_actions %}disabled{% endif %}>Upload</button>
+  <button type="submit" name="action" value="pass" class="btn btn-secondary ms-2" formnovalidate {% if disable_actions %}disabled{% endif %}>Pass</button>
+  {% if error %}
+    <div class="alert alert-warning mt-3">{{ error }}</div>
+  {% endif %}
 </form>
 
 {# Removed directory tree display for Step 1 input/output #}

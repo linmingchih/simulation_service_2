@@ -362,6 +362,8 @@ def run_step(flow_id, step, job_id):
         return redirect(url_for('main.run_step', flow_id=flow_id, step=current_step, job_id=job_id))
 
 
+    error_msg = None
+    disable_actions = False
     if request.method == 'POST':
         action = request.form.get('action')
         if action != 'pass':
@@ -371,36 +373,40 @@ def run_step(flow_id, step, job_id):
             spec.loader.exec_module(module)
             if hasattr(module, 'run'):
                 try:
-                    module.run(job_path, data=request.form, files=request.files, config=cfg)
+                    result = module.run(job_path, data=request.form, files=request.files, config=cfg)
                 except TypeError:
                     try:
-                        module.run(job_path, data=request.form, config=cfg)
+                        result = module.run(job_path, data=request.form, config=cfg)
                     except TypeError:
-                        module.run(job_path, data=request.form)
+                        result = module.run(job_path, data=request.form)
+                if isinstance(result, dict) and result.get('error'):
+                    error_msg = result['error']
+                    disable_actions = True
+        
+        if error_msg is None:
+            # Determine the next step from flow.json
+            next_step = None
+            flow_json = os.path.join(flow_path, 'flow.json')
+            if os.path.isfile(flow_json):
+                with open(flow_json) as f:
+                    data = json.load(f)
+                    steps = data.get('steps', [])
+                    if step in steps:
+                        idx = steps.index(step)
+                        if idx + 1 < len(steps):
+                            next_step = steps[idx + 1]
 
-        # Determine the next step from flow.json
-        next_step = None
-        flow_json = os.path.join(flow_path, 'flow.json')
-        if os.path.isfile(flow_json):
-            with open(flow_json) as f:
-                data = json.load(f)
-                steps = data.get('steps', [])
-                if step in steps:
-                    idx = steps.index(step)
-                    if idx + 1 < len(steps):
-                        next_step = steps[idx + 1]
+            if next_step:
+                meta['step'] = next_step
+            else:
+                meta['step'] = 'completed'
+            with open(meta_file, 'w') as f:
+                json.dump(meta, f)
 
-        if next_step:
-            meta['step'] = next_step
-        else:
-            meta['step'] = 'completed'
-        with open(meta_file, 'w') as f:
-            json.dump(meta, f)
-
-        if next_step:
-            return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
-        else:
-            return redirect(url_for('main.deck'))
+            if next_step:
+                return redirect(url_for('main.run_step', flow_id=flow_id, step=next_step, job_id=job_id))
+            else:
+                return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
     if flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
@@ -554,6 +560,8 @@ def run_step(flow_id, step, job_id):
         zip_file=zip_file,
         categories=locals().get('categories'),
         renamed_map=locals().get('renamed_map'),
+        error=error_msg,
+        disable_actions=disable_actions,
     )
 
 
