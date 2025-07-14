@@ -1,8 +1,8 @@
 import json
 import uuid
 import os
-import shutil
 import importlib.util
+from app.utils import remove_dir
 from pyedb import Edb
 from functools import wraps
 from datetime import datetime
@@ -299,7 +299,7 @@ def delete_job(job_id):
                     pass
         user = current_user()
         if user and (user.get('role') == 'admin' or owner == user.get('username')):
-            shutil.rmtree(job_path)
+            remove_dir(job_path)
     return redirect(url_for('main.deck'))
 
 
