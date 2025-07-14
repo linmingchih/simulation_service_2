@@ -37,3 +37,16 @@ are saved in `users.json` for future sessions.
 - `run.py` - Application entry point
 
 This is a simplified example intended for demonstration purposes.
+
+## Step 1 Input Handling
+
+The `Flow_SIwave_SYZ` example demonstrates two ways to provide the initial
+design data:
+
+1. **Upload a `.brd` file** – The file is converted to an AEDB project using
+   PyEDB and saved as `design.aedb` in the job's output directory.
+2. **Upload an `.aedb` folder** – The folder is copied directly to the output
+   directory and also renamed to `design.aedb`.
+
+All subsequent steps reference `output/design.aedb`, ensuring a consistent path
+regardless of the original input type.
