@@ -405,23 +405,18 @@ def run_step(flow_id, step, job_id):
     selected_nets = None
     zip_file = None
     if flow_id == 'Flow_SIwave_SYZ' and step == 'step_02':
-        brd_file = None
-        aedb_folder = None
+        design_file = None
         input_dir = os.path.join(job_path, 'input')
         if os.path.isdir(input_dir):
             for f in os.listdir(input_dir):
-                if f.lower().endswith('.brd'):
-                    brd_file = f
+                if f.lower().endswith(('.brd', '.zip', '.aedb')):
+                    design_file = f
                     break
-            if os.path.isdir(os.path.join(input_dir, 'uploaded.aedb')):
-                aedb_folder = 'uploaded.aedb'
         xlsx_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
         info_lines = []
-        if brd_file:
-            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
-            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
-        elif aedb_folder:
-            info_lines.append(f'Step 1 Input: {aedb_folder}')
+        if design_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=design_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{design_file}</a>')
         if xlsx_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
@@ -452,24 +447,19 @@ def run_step(flow_id, step, job_id):
                 renamed_map = {}
         nets = None
         info_lines = []
-        brd_file = None
-        aedb_folder = None
+        design_file = None
         xlsx_input = None
         input_dir = os.path.join(job_path, 'input')
         if os.path.isdir(input_dir):
             for f in os.listdir(input_dir):
-                if f.lower().endswith('.brd') and not brd_file:
-                    brd_file = f
+                if f.lower().endswith(('.brd', '.zip', '.aedb')) and not design_file:
+                    design_file = f
                 if f.lower().endswith('.xlsx'):
                     xlsx_input = f
-            if os.path.isdir(os.path.join(input_dir, 'uploaded.aedb')):
-                aedb_folder = 'uploaded.aedb'
         stackup_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
-        if brd_file:
-            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
-            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
-        elif aedb_folder:
-            info_lines.append(f'Step 1 Input: {aedb_folder}')
+        if design_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=design_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{design_file}</a>')
         if stackup_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=stackup_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{stackup_file}</a>')
@@ -477,27 +467,22 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
             info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
-        brd_file = None
-        aedb_folder = None
+        design_file = None
         xlsx_input = None
         input_dir = os.path.join(job_path, 'input')
         if os.path.isdir(input_dir):
             for f in os.listdir(input_dir):
-                if f.lower().endswith('.brd') and not brd_file:
-                    brd_file = f
+                if f.lower().endswith(('.brd', '.zip', '.aedb')) and not design_file:
+                    design_file = f
                 if f.lower().endswith('.xlsx'):
                     xlsx_input = f
-            if os.path.isdir(os.path.join(input_dir, 'uploaded.aedb')):
-                aedb_folder = 'uploaded.aedb'
         stackup_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
         updated_file = 'updated.xlsx' if os.path.isfile(os.path.join(output_dir, 'updated.xlsx')) else None
         zipped_file = 'updated_pyedb.zip' if os.path.isfile(os.path.join(output_dir, 'updated_pyedb.zip')) else None
         info_lines = []
-        if brd_file:
-            url = url_for('main.get_job_file', job_id=job_id, filename=brd_file)
-            info_lines.append(f'Step 1 Input: <a href="{url}" download>{brd_file}</a>')
-        elif aedb_folder:
-            info_lines.append(f'Step 1 Input: {aedb_folder}')
+        if design_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=design_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{design_file}</a>')
         if stackup_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=stackup_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{stackup_file}</a>')

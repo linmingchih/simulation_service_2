@@ -61,74 +61,49 @@ def run(job_path, data=None, files=None):
     unit = "mm"
     if data:
         unit = data.get("unit", "mm")
-    brd = files.get("brd_file") if files else None
-    aedb_files = files.getlist("aedb_folder") if files else []
-    aedb_zip = files.get("aedb_zip") if files else None
-    if brd and brd.filename:
-        brd_path = os.path.join(input_dir, brd.filename)
-        brd.save(brd_path)
+    design = files.get("design_file") if files else None
+    if design and design.filename:
+        filename = design.filename
+        ext = os.path.splitext(filename)[1].lower()
+        design_path = os.path.join(input_dir, filename)
+        design.save(design_path)
 
-        # Convert the BRD file to an AEDB using PyEDB
-        edb = Edb(brd_path, edbversion="2024.1")
-        edb_dir = os.path.join(output_dir, "design.aedb")
-        remove_dir(edb_dir)
-        edb.save_as(edb_dir)
+        if ext == ".brd":
+            edb = Edb(design_path, edbversion="2024.1")
+            edb_dir = os.path.join(output_dir, "design.aedb")
+            remove_dir(edb_dir)
+            edb.save_as(edb_dir)
 
-        with open(os.path.join(output_dir, "rename.log"), "w") as fp:
-            fp.write("BRD converted to design.aedb\n")
+            with open(os.path.join(output_dir, "rename.log"), "w") as fp:
+                fp.write("BRD converted to design.aedb\n")
 
-        # Export the stackup to Excel
-        xlsx_path = os.path.join(output_dir, "stackup.xlsx")
-        export_stackup(edb, xlsx_path, unit=unit)
-        edb.close()
-    elif aedb_zip and aedb_zip.filename:
-        zip_path = os.path.join(input_dir, aedb_zip.filename)
-        aedb_zip.save(zip_path)
+            xlsx_path = os.path.join(output_dir, "stackup.xlsx")
+            export_stackup(edb, xlsx_path, unit=unit)
+            edb.close()
+        else:
+            tmp_dir = os.path.join(input_dir, "aedb_zip")
+            remove_dir(tmp_dir)
+            os.makedirs(tmp_dir, exist_ok=True)
+            with zipfile.ZipFile(design_path) as zf:
+                zf.extractall(tmp_dir)
 
-        tmp_dir = os.path.join(input_dir, "aedb_zip")
-        remove_dir(tmp_dir)
-        os.makedirs(tmp_dir, exist_ok=True)
-        with zipfile.ZipFile(zip_path) as zf:
-            zf.extractall(tmp_dir)
+            aedb_folder = None
+            for name in os.listdir(tmp_dir):
+                p = os.path.join(tmp_dir, name)
+                if name.lower().endswith(".aedb") and os.path.isdir(p):
+                    aedb_folder = p
+                    break
+            if not aedb_folder:
+                aedb_folder = tmp_dir
 
-        aedb_folder = None
-        for name in os.listdir(tmp_dir):
-            p = os.path.join(tmp_dir, name)
-            if name.lower().endswith(".aedb") and os.path.isdir(p):
-                aedb_folder = p
-                break
-        if not aedb_folder:
-            aedb_folder = tmp_dir
+            edb_dir = os.path.join(output_dir, "design.aedb")
+            remove_dir(edb_dir)
+            shutil.copytree(aedb_folder, edb_dir)
 
-        edb_dir = os.path.join(output_dir, "design.aedb")
-        remove_dir(edb_dir)
-        shutil.copytree(aedb_folder, edb_dir)
+            with open(os.path.join(output_dir, "rename.log"), "w") as fp:
+                fp.write(f"Uploaded {filename} extracted to design.aedb\n")
 
-        with open(os.path.join(output_dir, "rename.log"), "w") as fp:
-            fp.write(f"Uploaded {aedb_zip.filename} extracted to design.aedb\n")
-
-        edb = Edb(edb_dir, edbversion="2024.1")
-        xlsx_path = os.path.join(output_dir, "stackup.xlsx")
-        export_stackup(edb, xlsx_path, unit=unit)
-        edb.close()
-    elif aedb_files and any(f.filename for f in aedb_files):
-        aedb_input = os.path.join(input_dir, "uploaded.aedb")
-        remove_dir(aedb_input)
-        for f in aedb_files:
-            if not f.filename:
-                continue
-            dest = os.path.join(aedb_input, f.filename)
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
-            f.save(dest)
-
-        edb_dir = os.path.join(output_dir, "design.aedb")
-        remove_dir(edb_dir)
-        shutil.copytree(aedb_input, edb_dir)
-
-        with open(os.path.join(output_dir, "rename.log"), "w") as fp:
-            fp.write("Uploaded AEDB folder copied to design.aedb\n")
-
-        edb = Edb(edb_dir, edbversion="2024.1")
-        xlsx_path = os.path.join(output_dir, "stackup.xlsx")
-        export_stackup(edb, xlsx_path, unit=unit)
-        edb.close()
+            edb = Edb(edb_dir, edbversion="2024.1")
+            xlsx_path = os.path.join(output_dir, "stackup.xlsx")
+            export_stackup(edb, xlsx_path, unit=unit)
+            edb.close()
