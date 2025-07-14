@@ -7,7 +7,7 @@ from pyedb import Edb
 
 
 
-def run(job_path, data=None, files=None):
+def run(job_path, data=None, files=None, config=None):
     output_dir = os.path.join(job_path, "output")
     os.makedirs(output_dir, exist_ok=True)
 
@@ -15,7 +15,8 @@ def run(job_path, data=None, files=None):
     if not os.path.isdir(edb_dir):
         return {}
 
-    edb = Edb(edb_dir, edbversion="2024.1")
+    edb_version = (config or {}).get("edb_version", "2024.1")
+    edb = Edb(edb_dir, edbversion=edb_version)
     all_nets = list(edb.nets.nets.keys())
 
     selected_nets = []

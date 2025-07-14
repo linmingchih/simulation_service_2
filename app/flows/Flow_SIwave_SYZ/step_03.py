@@ -12,14 +12,15 @@ def change_name(edb_obj, old_name, new_name):
     return False
 
 
-def run(job_path, data=None, files=None):
+def run(job_path, data=None, files=None, config=None):
     output_dir = os.path.join(job_path, "output")
     edb_dir = os.path.join(output_dir, "design.aedb")
     if not os.path.isdir(edb_dir):
         return {}
 
     rename_log = {}
-    edb = Edb(edb_dir, edbversion="2024.1")
+    edb_version = (config or {}).get("edb_version", "2024.1")
+    edb = Edb(edb_dir, edbversion=edb_version)
     if data:
         for _, comp in edb.components.components.items():
             new_name = data.get(f"new_{comp.part_name}")
