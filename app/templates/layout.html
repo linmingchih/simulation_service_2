@@ -22,6 +22,7 @@
       <div class="ms-auto">
         {% if session.get('username') %}
           <span class="me-2">Logged in as {{ session['username'] }}</span>
+          <a href="{{ url_for('main.user_config') }}" class="btn btn-outline-primary btn-sm me-2">Settings</a>
           <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
         {% else %}
           <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
