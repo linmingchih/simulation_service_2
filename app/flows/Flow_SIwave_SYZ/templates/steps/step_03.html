@@ -13,7 +13,7 @@
         <tr>
           <td>{{ part }}</td>
           <td>
-            <input type="text" class="form-control form-control-sm rename-input" name="new_{{ part }}" data-original="{{ part }}" placeholder="Rename {{ part }}" value="{{ renamed_map.get(part, part) }}">
+            <input type="text" class="form-control form-control-sm rename-input" name="new_{{ part }}" data-original="{{ part }}" placeholder="Rename {{ part }}" value="{{ renamed_map.get(part, '') }}">
           </td>
         </tr>
       {% endfor %}
@@ -32,41 +32,33 @@ document.addEventListener('DOMContentLoaded', function () {
   function validate() {
     const counts = {};
     inputs.forEach(inp => {
-      const val = inp.value.trim() || inp.dataset.original;
-      const key = val.toLowerCase();
-      counts[key] = (counts[key] || 0) + 1;
+      const typed = inp.value.trim();
+      const orig = inp.dataset.original;
+      const finalName = typed || orig;
+      counts[finalName.toLowerCase()] = (counts[finalName.toLowerCase()] || 0) + 1;
     });
 
     let valid = true;
     inputs.forEach(inp => {
       const typed = inp.value.trim();
-      const original = inp.dataset.original;
-      const finalName = typed || original;
-      const row = inp.closest('tr');
-      inp.classList.remove('is-valid', 'is-invalid');
-      row.classList.remove('table-danger');
+      const orig = inp.dataset.original;
+      const finalName = typed || orig;
+      const cnt = counts[finalName.toLowerCase()];
+
+      inp.classList.remove('is-invalid');
       inp.removeAttribute('title');
 
-      if (counts[finalName.toLowerCase()] > 1) {
+      if (typed && typed !== orig && cnt > 1) {
         inp.classList.add('is-invalid');
         inp.setAttribute('title', 'Duplicate name');
         valid = false;
-      }
-
-      if (!typed || typed === original) {
-        row.classList.add('table-danger');
-      } else if (counts[finalName.toLowerCase()] === 1) {
-        inp.classList.add('is-valid');
       }
     });
 
     applyBtn.disabled = !valid;
   }
 
-  inputs.forEach(inp => {
-    inp.addEventListener('input', validate);
-  });
-
+  inputs.forEach(inp => inp.addEventListener('input', validate));
   validate();
 });
 </script>
