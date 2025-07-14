@@ -401,6 +401,8 @@ def run_step(flow_id, step, job_id):
 
     info_lines = None
     nets = None
+    selected_nets = None
+    zip_file = None
     if flow_id == 'Flow_SIwave_SYZ' and step == 'step_02':
         brd_file = None
         input_dir = os.path.join(job_path, 'input')
@@ -454,7 +456,24 @@ def run_step(flow_id, step, job_id):
                 edb.close_edb()
             except Exception:
                 nets = []
-    
+
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
+        zip_file = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
+        selected_nets = []
+        info_path = os.path.join(output_dir, 'cutout_info.json')
+        if os.path.isfile(info_path):
+            with open(info_path) as fp:
+                try:
+                    data = json.load(fp)
+                    selected_nets = data.get('selected_nets', [])
+                except json.JSONDecodeError:
+                    pass
+        nets = selected_nets
+        info_lines = []
+        if zip_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=zip_file)
+            info_lines.append(f'Output: <a href="{url}" download>{zip_file}</a>')
+
     else:
         nets = None
 
@@ -474,6 +493,8 @@ def run_step(flow_id, step, job_id):
         nets=nets,
         input_tree=input_tree,
         output_tree=output_tree,
+        selected_nets=selected_nets,
+        zip_file=zip_file,
     )
 
 
