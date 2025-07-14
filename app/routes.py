@@ -328,6 +328,9 @@ def run_step(flow_id, step, job_id):
     job_path = os.path.join(JOB_DIR, job_id)
     os.makedirs(job_path, exist_ok=True)
     os.makedirs(os.path.join(job_path, 'output'), exist_ok=True)
+    user = current_user()
+    cfg = user.get('config', {}) if user else {}
+    edb_version = cfg.get('edb_version', '2024.1')
     meta_file = os.path.join(job_path, 'metadata.json')
     meta = {}
     if os.path.isfile(meta_file):
@@ -368,9 +371,12 @@ def run_step(flow_id, step, job_id):
             spec.loader.exec_module(module)
             if hasattr(module, 'run'):
                 try:
-                    module.run(job_path, data=request.form, files=request.files)
+                    module.run(job_path, data=request.form, files=request.files, config=cfg)
                 except TypeError:
-                    module.run(job_path, data=request.form)
+                    try:
+                        module.run(job_path, data=request.form, config=cfg)
+                    except TypeError:
+                        module.run(job_path, data=request.form)
 
         # Determine the next step from flow.json
         next_step = None
@@ -439,7 +445,7 @@ def run_step(flow_id, step, job_id):
         edb_dir = os.path.join(output_dir, 'design.aedb')
         if os.path.isdir(edb_dir):
             try:
-                edb = Edb(edb_dir, edbversion='2024.1')
+                edb = Edb(edb_dir, edbversion=edb_version)
                 type_part = defaultdict(set)
                 for cname, comp in edb.components.components.items():
                     type_part[comp.type].add(comp.part_name)
@@ -510,7 +516,7 @@ def run_step(flow_id, step, job_id):
         edb_dir = os.path.join(output_dir, 'design.aedb')
         if os.path.isdir(edb_dir):
             try:
-                edb = Edb(edb_dir, edbversion='2024.1')
+                edb = Edb(edb_dir, edbversion=edb_version)
                 nets = list(edb.nets.nets.keys())
                 edb.close_edb()
             except Exception:

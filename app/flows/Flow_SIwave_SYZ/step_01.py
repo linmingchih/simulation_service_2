@@ -52,7 +52,7 @@ def export_stackup(edb_obj, xlsx_path, unit="mm"):
 
 
 
-def run(job_path, data=None, files=None):
+def run(job_path, data=None, files=None, config=None):
     input_dir = os.path.join(job_path, 'input')
     output_dir = os.path.join(job_path, 'output')
     os.makedirs(input_dir, exist_ok=True)
@@ -62,6 +62,7 @@ def run(job_path, data=None, files=None):
     if data:
         unit = data.get("unit", "mm")
     design = files.get("design_file") if files else None
+    edb_version = (config or {}).get("edb_version", "2024.1")
     if design and design.filename:
         filename = design.filename
         ext = os.path.splitext(filename)[1].lower()
@@ -69,7 +70,7 @@ def run(job_path, data=None, files=None):
         design.save(design_path)
 
         if ext == ".brd":
-            edb = Edb(design_path, edbversion="2024.1")
+            edb = Edb(design_path, edbversion=edb_version)
             edb_dir = os.path.join(output_dir, "design.aedb")
             remove_dir(edb_dir)
             edb.save_as(edb_dir)
@@ -103,7 +104,7 @@ def run(job_path, data=None, files=None):
             with open(os.path.join(output_dir, "rename.log"), "w") as fp:
                 fp.write(f"Uploaded {filename} extracted to design.aedb\n")
 
-            edb = Edb(edb_dir, edbversion="2024.1")
+            edb = Edb(edb_dir, edbversion=edb_version)
             xlsx_path = os.path.join(output_dir, "stackup.xlsx")
             export_stackup(edb, xlsx_path, unit=unit)
             edb.close()
