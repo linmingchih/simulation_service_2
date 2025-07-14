@@ -1,4 +1,5 @@
 import os
+import shutil
 from app.utils import remove_dir
 from openpyxl import Workbook
 from pyedb import Edb
@@ -60,6 +61,7 @@ def run(job_path, data=None, files=None):
     if data:
         unit = data.get("unit", "mm")
     brd = files.get("brd_file") if files else None
+    aedb_files = files.getlist("aedb_folder") if files else []
     if brd and brd.filename:
         brd_path = os.path.join(input_dir, brd.filename)
         brd.save(brd_path)
@@ -71,6 +73,24 @@ def run(job_path, data=None, files=None):
         edb.save_as(edb_dir)
 
         # Export the stackup to Excel
+        xlsx_path = os.path.join(output_dir, "stackup.xlsx")
+        export_stackup(edb, xlsx_path, unit=unit)
+        edb.close()
+    elif aedb_files and any(f.filename for f in aedb_files):
+        aedb_input = os.path.join(input_dir, "uploaded.aedb")
+        remove_dir(aedb_input)
+        for f in aedb_files:
+            if not f.filename:
+                continue
+            dest = os.path.join(aedb_input, f.filename)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            f.save(dest)
+
+        edb_dir = os.path.join(output_dir, "design.aedb")
+        remove_dir(edb_dir)
+        shutil.copytree(aedb_input, edb_dir)
+
+        edb = Edb(edb_dir, edbversion="2024.1")
         xlsx_path = os.path.join(output_dir, "stackup.xlsx")
         export_stackup(edb, xlsx_path, unit=unit)
         edb.close()

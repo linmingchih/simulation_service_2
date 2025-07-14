@@ -1,10 +1,17 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>{{ flow_name }} - {{ job_topic }} : Step 1 - Import Brd</h2>
+<h2>{{ flow_name }} - {{ job_topic }} : Step 1 - Import Design</h2>
 <form method="post" enctype="multipart/form-data" id="brd-form">
   <div class="mb-3">
     <label class="form-label">BRD File</label>
-    <input type="file" class="form-control" name="brd_file" required>
+    <input type="file" class="form-control" name="brd_file">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">AEDB Folder</label>
+    <input type="file" class="form-control" name="aedb_folder" webkitdirectory directory multiple>
+  </div>
+  <div class="mb-3">
+    <small class="form-text text-muted">Upload either a BRD file or choose an AEDB folder.</small>
   </div>
   <div class="mb-3">
     <label class="form-label">Thickness Unit</label>
