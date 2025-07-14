@@ -15,7 +15,7 @@ def run(job_path, data=None, files=None):
     if data:
         for comp_name, comp in edb.components.components.items():
             new_name = data.get(f"new_{comp.part_name}")
-            if new_name:
+            if new_name and new_name != comp.part_name:
                 for comp_def in edb.component_defs:
                     if comp_def.GetName() == comp.part_name:
                         comp_def.SetName(new_name)
