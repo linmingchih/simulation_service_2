@@ -2,5 +2,8 @@
 {% block content %}
 <h2>{{ flow_name }} - {{ job_topic }} : Step 3</h2>
 <p>This is step 3 for {{ flow_id }}.</p>
-<form method="post"><button type="submit" class="btn btn-primary">Next</button></form>
+<form method="post">
+  <button type="submit" name="action" value="run" class="btn btn-primary">Next</button>
+  <button type="submit" name="action" value="pass" class="btn btn-secondary ms-2" formnovalidate>Pass</button>
+</form>
 {% endblock %}
