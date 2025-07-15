@@ -1,0 +1,18 @@
+:root {
+  --bs-primary: #198754;
+  --bs-primary-rgb: 25, 135, 84;
+}
+.navbar {
+  background-color: var(--bs-primary) !important;
+}
+
+.btn-primary,
+.btn-outline-primary {
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--bs-primary);
+  color: var(--bs-primary) !important;
+}
