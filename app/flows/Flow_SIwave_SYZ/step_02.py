@@ -69,6 +69,16 @@ def run(job_path, data=None, files=None, config=None):
         if os.path.isdir(edb_dir):
             apply_xlsx(x_path, edb_dir, edb_version)
 
+            # Generate layer images for visualization
+            try:
+                edb = Edb(edb_dir, edbversion=edb_version)
+                for layer_name in edb.stackup.signal_layers:
+                    img_path = os.path.join(output_dir, f"{layer_name}.png")
+                    edb.nets.plot(layers=layer_name, save_plot=img_path)
+                edb.close()
+            except Exception:
+                pass
+
             # Create a zipped copy of the updated AEDB for easy download
             zip_path = os.path.join(output_dir, 'updated_pyedb.zip')
             if os.path.isfile(zip_path):

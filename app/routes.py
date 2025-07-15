@@ -425,6 +425,8 @@ def run_step(flow_id, step, job_id):
             if os.path.isfile(os.path.join(output_dir, f)):
                 output_files.append(f)
 
+    layer_images = None
+
     info_lines = None
     nets = None
     selected_nets = None
@@ -445,6 +447,7 @@ def run_step(flow_id, step, job_id):
         if xlsx_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
+        layer_images = [f for f in output_files if f.lower().endswith('.png')]
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_03':
         categories = {}
         renamed_map = {}
@@ -558,6 +561,7 @@ def run_step(flow_id, step, job_id):
         output_tree=output_tree,
         selected_nets=selected_nets,
         zip_file=zip_file,
+        layer_images=layer_images,
         categories=locals().get('categories'),
         renamed_map=locals().get('renamed_map'),
         error=error_msg,
