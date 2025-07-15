@@ -312,9 +312,9 @@ def get_job_file(job_id, filename):
     job_output = os.path.join(JOB_DIR, job_id, 'output')
     job_input = os.path.join(JOB_DIR, job_id, 'input')
     if os.path.isfile(os.path.join(job_output, filename)):
-        return send_from_directory(job_output, filename, as_attachment=True)
+        return send_from_directory(job_output, filename)
     if os.path.isfile(os.path.join(job_input, filename)):
-        return send_from_directory(job_input, filename, as_attachment=True)
+        return send_from_directory(job_input, filename)
     return 'File not found', 404
 
 
