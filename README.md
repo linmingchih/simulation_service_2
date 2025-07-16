@@ -45,4 +45,8 @@ step. Upload either a `.brd` file or a zipped `.aedb` archive. The uploaded file
 is processed and saved as `design.aedb` in the job's output directory.
 
 All subsequent steps reference `output/design.aedb`, ensuring a consistent path
-regardless of the original input type.
+regardless of the original input type. When the design is uploaded and you
+click **Apply** in Step&nbsp;1, the application now plots all signal layer images
+and saves them as PNG files in the job's output directory. These images are
+displayed as a carousel on the Step&nbsp;2 page for quick visualization of the
+stackup.

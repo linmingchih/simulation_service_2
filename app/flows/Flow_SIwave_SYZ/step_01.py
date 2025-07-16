@@ -80,6 +80,16 @@ def run(job_path, data=None, files=None, config=None):
 
             xlsx_path = os.path.join(output_dir, "stackup.xlsx")
             export_stackup(edb, xlsx_path, unit=unit)
+
+            # Plot all signal layers for the next step carousel
+            try:
+                for layer_name in edb.stackup.signal_layers:
+                    img_path = os.path.join(output_dir, f"{layer_name}.png")
+                    edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
+            except Exception as e:
+                with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
+                    fp.write(f"Failed to plot {layer_name}: {e}\n")
+
             edb.close()
         else:
             tmp_dir = os.path.join(input_dir, "aedb_zip")
@@ -107,4 +117,14 @@ def run(job_path, data=None, files=None, config=None):
             edb = Edb(edb_dir, edbversion=edb_version)
             xlsx_path = os.path.join(output_dir, "stackup.xlsx")
             export_stackup(edb, xlsx_path, unit=unit)
+
+            # Plot all signal layers for the next step carousel
+            try:
+                for layer_name in edb.stackup.signal_layers:
+                    img_path = os.path.join(output_dir, f"{layer_name}.png")
+                    edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
+            except Exception as e:
+                with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
+                    fp.write(f"Failed to plot {layer_name}: {e}\n")
+
             edb.close()
