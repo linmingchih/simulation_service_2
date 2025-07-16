@@ -28,10 +28,12 @@
     {% endfor %}
   </div>
   <button class="carousel-control-prev" type="button" data-bs-target="#layerCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon"></span>
+    <span aria-hidden="true">&larr;</span>
+    <span class="visually-hidden">Previous</span>
   </button>
   <button class="carousel-control-next" type="button" data-bs-target="#layerCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon"></span>
+    <span aria-hidden="true">&rarr;</span>
+    <span class="visually-hidden">Next</span>
   </button>
 </div>
 <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>

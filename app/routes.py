@@ -382,8 +382,10 @@ def run_step(flow_id, step, job_id):
                 if isinstance(result, dict) and result.get('error'):
                     error_msg = result['error']
                     disable_actions = True
-        
+
         if error_msg is None:
+            if step == 'step_01':
+                meta['show_layout'] = 'show_layout' in request.form
             # Determine the next step from flow.json
             next_step = None
             flow_json = os.path.join(flow_path, 'flow.json')
@@ -447,7 +449,10 @@ def run_step(flow_id, step, job_id):
         if xlsx_file:
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_file)
             info_lines.append(f'Step 1 Output: <a href="{url}" download>{xlsx_file}</a>')
-        layer_images = [f for f in output_files if f.lower().endswith('.png')]
+        if meta.get('show_layout'):
+            layer_images = [f for f in output_files if f.lower().endswith('.png')]
+        else:
+            layer_images = None
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_03':
         categories = {}
         renamed_map = {}
@@ -608,6 +613,7 @@ def run_step(flow_id, step, job_id):
         selected_nets=selected_nets,
         zip_file=zip_file,
         layer_images=layer_images,
+        show_layout=meta.get('show_layout', False),
         categories=locals().get('categories'),
         part_values=locals().get("part_values"),
         renamed_map=locals().get('renamed_map'),

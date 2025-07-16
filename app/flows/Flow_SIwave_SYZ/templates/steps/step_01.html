@@ -2,6 +2,10 @@
 {% block content %}
 <h2>{{ flow_name }} - {{ job_topic }} : Step 1 - Import Design</h2>
 <form method="post" enctype="multipart/form-data" id="brd-form">
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="show-layout" name="show_layout" {% if show_layout %}checked{% endif %}>
+    <label class="form-check-label" for="show-layout">Show PCB Layout</label>
+  </div>
   <div class="mb-3">
     <label class="form-label">Design File (BRD or zipped AEDB)</label>
     <input type="file" class="form-control" name="design_file" accept=".brd,.zip,.aedb" required>
