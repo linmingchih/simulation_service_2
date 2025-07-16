@@ -71,16 +71,16 @@ def run(job_path, data=None, files=None, config=None):
             apply_xlsx(x_path, edb_dir, edb_version)
 
             # Generate layer images for visualization
-            try:
-                edb = Edb(edb_dir, edbversion=edb_version)
-                for layer_name in edb.stackup.signal_layers:
-                    img_path = os.path.join(output_dir, f"{layer_name}.png")
-                    # plot expects a list of layers; ensure no GUI is opened
-                    edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
-                edb.close()
-            except Exception as e:
-                with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
-                    fp.write(f"Failed to plot {layer_name}: {e}\n")
+            # try:
+            #     edb = Edb(edb_dir, edbversion=edb_version)
+            #     for layer_name in edb.stackup.signal_layers:
+            #         img_path = os.path.join(output_dir, f"{layer_name}.png")
+            #         # plot expects a list of layers; ensure no GUI is opened
+            #         edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
+            #     edb.close()
+            # except Exception as e:
+            #     with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
+            #         fp.write(f"Failed to plot {layer_name}: {e}\n")
 
             # Create a zipped copy of the updated AEDB for easy download
             zip_path = os.path.join(output_dir, 'updated_pyedb.zip')
