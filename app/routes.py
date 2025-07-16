@@ -505,17 +505,17 @@ def run_step(flow_id, step, job_id):
         if os.path.isdir(edb_dir):
             try:
                 edb = Edb(edb_dir, edbversion=edb_version)
-                def _unique(comp_iter):
+                def _unique(comp_iter, attr="value"):
                     uniq = {}
                     for comp in comp_iter:
                         if comp.part_name not in uniq:
-                            uniq[comp.part_name] = comp.value
+                            uniq[comp.part_name] = getattr(comp, attr, comp.value)
                     return sorted(uniq.items())
 
                 part_values = {
-                    'Resistors': _unique(edb.components.resistors.values()),
-                    'Capacitors': _unique(edb.components.capacitors.values()),
-                    'Inductors': _unique(edb.components.inductors.values()),
+                    'Resistors': _unique(edb.components.resistors.values(), "res_value"),
+                    'Capacitors': _unique(edb.components.capacitors.values(), "cap_value"),
+                    'Inductors': _unique(edb.components.inductors.values(), "ind_value"),
                 }
                 edb.close_edb()
             except Exception:
