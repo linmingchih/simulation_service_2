@@ -1,10 +1,15 @@
 {% extends 'layout.html' %}
 {% block content %}
+{% set color_map = {
+  'IC Parts': {'table': 'table-warning', 'text': 'text-warning'},
+  'IO Parts': {'table': 'table-info', 'text': 'text-info'},
+  'Other Parts': {'table': 'table-success', 'text': 'text-success'}
+} %}
 <h2>{{ flow_name }} - {{ job_topic }} : Step 3 - Rename Components</h2>
 <form method="post" id="rename-form">
   {% for group, parts in categories.items() %}
-    <h5>{{ group }}</h5>
-    <table class="table table-sm">
+    <h5 class="{{ color_map.get(group, {}).get('text', '') }}">{{ group }}</h5>
+    <table class="table table-sm {{ color_map.get(group, {}).get('table', '') }}">
       <thead>
         <tr><th>Original Name</th><th>New Name</th></tr>
       </thead>
