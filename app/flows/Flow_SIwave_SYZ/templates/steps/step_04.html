@@ -1,10 +1,15 @@
 {% extends 'layout.html' %}
 {% block content %}
+{% set color_map = {
+  'Resistors': {'table': 'table-warning', 'text': 'text-warning'},
+  'Capacitors': {'table': 'table-info', 'text': 'text-info'},
+  'Inductors': {'table': 'table-success', 'text': 'text-success'}
+} %}
 <h2>{{ flow_name }} - {{ job_topic }} : Step 4 - Modify Part Values</h2>
 <form method="post" id="value-form">
   {% for ctype, items in part_values.items() %}
-    <h5>{{ ctype }}</h5>
-    <table class="table table-sm">
+    <h5 class="{{ color_map.get(ctype, {}).get('text', '') }}">{{ ctype }}</h5>
+    <table class="table table-sm {{ color_map.get(ctype, {}).get('table', '') }}">
       <thead>
         <tr><th>Part Name</th><th>Original Value</th><th>New Value</th></tr>
       </thead>
