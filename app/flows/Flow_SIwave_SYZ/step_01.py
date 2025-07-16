@@ -59,8 +59,10 @@ def run(job_path, data=None, files=None, config=None):
     os.makedirs(output_dir, exist_ok=True)
 
     unit = "mm"
+    show_layout = False
     if data:
         unit = data.get("unit", "mm")
+        show_layout = 'show_layout' in data
     design = files.get("design_file") if files else None
     edb_version = (config or {}).get("edb_version", "2024.1")
     if design and design.filename:
@@ -81,14 +83,15 @@ def run(job_path, data=None, files=None, config=None):
             xlsx_path = os.path.join(output_dir, "stackup.xlsx")
             export_stackup(edb, xlsx_path, unit=unit)
 
-            # Plot all signal layers for the next step carousel
-            try:
-                for layer_name in edb.stackup.signal_layers:
-                    img_path = os.path.join(output_dir, f"{layer_name}.png")
-                    edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
-            except Exception as e:
-                with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
-                    fp.write(f"Failed to plot {layer_name}: {e}\n")
+            # Plot all signal layers only when user requests layout images
+            if show_layout:
+                try:
+                    for layer_name in edb.stackup.signal_layers:
+                        img_path = os.path.join(output_dir, f"{layer_name}.png")
+                        edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
+                except Exception as e:
+                    with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
+                        fp.write(f"Failed to plot {layer_name}: {e}\n")
 
             edb.close()
         else:
@@ -118,13 +121,14 @@ def run(job_path, data=None, files=None, config=None):
             xlsx_path = os.path.join(output_dir, "stackup.xlsx")
             export_stackup(edb, xlsx_path, unit=unit)
 
-            # Plot all signal layers for the next step carousel
-            try:
-                for layer_name in edb.stackup.signal_layers:
-                    img_path = os.path.join(output_dir, f"{layer_name}.png")
-                    edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
-            except Exception as e:
-                with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
-                    fp.write(f"Failed to plot {layer_name}: {e}\n")
+            # Plot all signal layers only when user requests layout images
+            if show_layout:
+                try:
+                    for layer_name in edb.stackup.signal_layers:
+                        img_path = os.path.join(output_dir, f"{layer_name}.png")
+                        edb.nets.plot(layers=[layer_name], show=False, save_plot=img_path)
+                except Exception as e:
+                    with open(os.path.join(output_dir, "plot_error.log"), "a") as fp:
+                        fp.write(f"Failed to plot {layer_name}: {e}\n")
 
             edb.close()
