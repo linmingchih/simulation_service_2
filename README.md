@@ -46,7 +46,8 @@ is processed and saved as `design.aedb` in the job's output directory.
 
 All subsequent steps reference `output/design.aedb`, ensuring a consistent path
 regardless of the original input type. When the design is uploaded and you
-click **Apply** in Step&nbsp;1, the application now plots all signal layer images
-and saves them as PNG files in the job's output directory. These images are
-displayed as a carousel on the Step&nbsp;2 page for quick visualization of the
-stackup.
+click **Apply** in Step&nbsp;1, you can optionally generate PCB layout images for
+the next step. If the **Show PCB Layout in Step2** checkbox is selected, the
+application plots all signal layer images and saves them as PNG files in the
+job's output directory. Step&nbsp;2 displays these images in a carousel. Leaving
+the box unchecked skips image generation to speed up Step&nbsp;1.
