@@ -1,122 +1,47 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>{{ flow_name }} - {{ job_topic }} : Step 4 - Cutout</h2>
-
-<form method="post">
-  <div class="mb-2">
-    <input type="text" id="filter-input" class="form-control form-control-sm"
-           placeholder="Filter net names (regex)">
-  </div>
-  <table class="table table-sm" id="nets-table">
-    <thead>
-      <tr>
-        <th>Net Name</th>
-        <th>Import</th>
-        <th>Port</th>
-        <th>Pwr/Gnd</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for net in nets %}
-      <tr>
-        <td>{{ net }}</td>
-        <td><input type="checkbox" name="import_{{ net }}"></td>
-        <td><input type="checkbox" name="port_{{ net }}"></td>
-        <td><input type="checkbox" name="pwr_{{ net }}"></td>
-      </tr>
+<h2>{{ flow_name }} - {{ job_topic }} : Step 4 - Modify Part Values</h2>
+<form method="post" id="value-form">
+  {% for ctype, items in part_values.items() %}
+    <h5>{{ ctype }}</h5>
+    <table class="table table-sm">
+      <thead>
+        <tr><th>Part Name</th><th>Original Value</th><th>New Value</th></tr>
+      </thead>
+      <tbody>
+      {% for name, val in items %}
+        <tr>
+          <td>{{ name }}</td>
+          <td>{{ val }}</td>
+          <td><input type="text" class="form-control form-control-sm value-input" name="val_{{ name }}" placeholder="{{ val }}"></td>
+        </tr>
       {% endfor %}
-    </tbody>
-  </table>
-  <button type="submit" name="action" value="apply" class="btn btn-primary" id="apply-btn">Apply</button>
+      </tbody>
+    </table>
+  {% endfor %}
+  <button type="submit" name="action" value="apply" id="apply-btn" class="btn btn-primary" disabled>Apply</button>
   <button type="submit" name="action" value="pass" class="btn btn-secondary ms-2" formnovalidate>Pass</button>
 </form>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const table = document.getElementById('nets-table');
-    const tbody = table.querySelector('tbody');
-    const filterInput = document.getElementById('filter-input');
-
-    // Regex filter
-    filterInput.addEventListener('input', () => {
-      let pattern = null;
-      try {
-        pattern = new RegExp(filterInput.value, 'i');
-      } catch (e) {}
-      Array.from(tbody.rows).forEach(row => {
-        const name = row.cells[0].textContent;
-        row.style.display = !pattern || pattern.test(name) ? '' : 'none';
-      });
-    });
-
-    // Sortable columns
-    const sortDir = {};
-    table.querySelectorAll('th').forEach((th, idx) => {
-      th.style.cursor = 'pointer';
-      th.addEventListener('click', () => {
-        const dir = sortDir[idx] ? -sortDir[idx] : 1;
-        sortDir[idx] = dir;
-        const rows = Array.from(tbody.rows);
-        rows.sort((a, b) => {
-          const aCell = a.cells[idx];
-          const bCell = b.cells[idx];
-          const aVal = aCell.querySelector('input') ?
-                       aCell.querySelector('input').checked.toString() :
-                       aCell.textContent;
-          const bVal = bCell.querySelector('input') ?
-                       bCell.querySelector('input').checked.toString() :
-                       bCell.textContent;
-          return aVal.localeCompare(bVal, undefined, {numeric: true}) * dir;
-        });
-        rows.forEach(r => tbody.appendChild(r));
-      });
-    });
-
-    // Row highlight and toggle rules
-    Array.from(tbody.rows).forEach(row => {
-      const importBox = row.querySelector('input[name^="import_"]');
-      const portBox = row.querySelector('input[name^="port_"]');
-      const pwrBox = row.querySelector('input[name^="pwr_"]');
-
-      function updateState() {
-        if (importBox.checked) {
-          row.classList.add('table-success');
-          portBox.disabled = false;
-          pwrBox.disabled = false;
+    const inputs = document.querySelectorAll('.value-input');
+    const applyBtn = document.getElementById('apply-btn');
+    function validate(){
+      let valid = true;
+      inputs.forEach(inp => {
+        const v = inp.value.trim();
+        if(v && !/^\d+(\.\d+)?\s*[a-zA-ZµΩ]*$/.test(v)){
+          inp.classList.add('is-invalid');
+          valid = false;
         } else {
-          row.classList.remove('table-success');
-          portBox.disabled = true;
-          pwrBox.disabled = true;
-          portBox.checked = false;
-          pwrBox.checked = false;
-        }
-      }
-
-      importBox.addEventListener('change', updateState);
-      updateState();
-
-      portBox.addEventListener('change', () => {
-        if (portBox.checked) {
-          pwrBox.checked = false;
+          inp.classList.remove('is-invalid');
         }
       });
-
-    pwrBox.addEventListener('change', () => {
-      if (pwrBox.checked) {
-        portBox.checked = false;
-      }
-    });
-  });
-
-    const form = document.querySelector('form');
-    const btn = document.getElementById('apply-btn');
-    form.addEventListener('submit', () => {
-      btn.disabled = true;
-      btn.classList.remove('btn-primary');
-      btn.classList.add('btn-warning');
-      btn.textContent = 'Running...';
-    });
+      applyBtn.disabled = !valid;
+    }
+    inputs.forEach(inp => inp.addEventListener('input', validate));
+    validate();
   });
 </script>
-
 {% endblock %}
