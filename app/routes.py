@@ -409,7 +409,7 @@ def run_step(flow_id, step, job_id):
                 return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
-    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
+    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_06':
         edb_dir = os.path.join(output_dir, 'design.aedb')
         zip_path = os.path.join(output_dir, 'design.aedb.zip')
         if os.path.isdir(edb_dir) and not os.path.isfile(zip_path):
@@ -495,6 +495,45 @@ def run_step(flow_id, step, job_id):
             url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
             info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_04':
+        part_values = {}
+        edb_dir = os.path.join(output_dir, 'design.aedb')
+        if os.path.isdir(edb_dir):
+            try:
+                edb = Edb(edb_dir, edbversion=edb_version)
+                part_values = {
+                    'Resistors': sorted((r.part_name, r.value) for r in edb.components.resistors.values()),
+                    'Capacitors': sorted((c.part_name, c.value) for c in edb.components.capacitors.values()),
+                    'Inductors': sorted((l.part_name, l.value) for l in edb.components.inductors.values()),
+                }
+                edb.close_edb()
+            except Exception:
+                part_values = {}
+        nets = None
+        info_lines = []
+        design_file = None
+        xlsx_input = None
+        input_dir = os.path.join(job_path, 'input')
+        if os.path.isdir(input_dir):
+            for f in os.listdir(input_dir):
+                if f.lower().endswith(('.brd', '.zip', '.aedb')) and not design_file:
+                    design_file = f
+                if f.lower().endswith('.xlsx'):
+                    xlsx_input = f
+        stackup_file = 'stackup.xlsx' if os.path.isfile(os.path.join(output_dir, 'stackup.xlsx')) else None
+        if design_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=design_file)
+            info_lines.append(f'Step 1 Input: <a href="{url}" download>{design_file}</a>')
+        if stackup_file:
+            url = url_for('main.get_job_file', job_id=job_id, filename=stackup_file)
+            info_lines.append(f'Step 1 Output: <a href="{url}" download>{stackup_file}</a>')
+        if xlsx_input:
+            url = url_for('main.get_job_file', job_id=job_id, filename=xlsx_input)
+            info_lines.append(f'Step 2 Input: <a href="{url}" download>{xlsx_input}</a>')
+        rename_file = os.path.join(output_dir, 'renamed_components.json')
+        if os.path.isfile(rename_file):
+            url = url_for('main.get_job_file', job_id=job_id, filename='renamed_components.json')
+            info_lines.append(f'Step 3 Output: <a href="{url}" download>renamed_components.json</a>')
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
         design_file = None
         xlsx_input = None
         input_dir = os.path.join(job_path, 'input')
@@ -530,7 +569,7 @@ def run_step(flow_id, step, job_id):
                 edb.close_edb()
             except Exception:
                 nets = []
-    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_05':
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_06':
         cutout_zip = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
         design_zip = 'design.aedb.zip' if os.path.isfile(os.path.join(output_dir, 'design.aedb.zip')) else None
         nets = None
@@ -563,6 +602,7 @@ def run_step(flow_id, step, job_id):
         zip_file=zip_file,
         layer_images=layer_images,
         categories=locals().get('categories'),
+        part_values=locals().get("part_values"),
         renamed_map=locals().get('renamed_map'),
         error=error_msg,
         disable_actions=disable_actions,

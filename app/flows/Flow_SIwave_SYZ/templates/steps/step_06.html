@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>{{ flow_name }} - {{ job_topic }} : Step 6 - Completed</h2>
+
+
+<p>The output files are available in the Information panel.</p>
+
+<a href="{{ url_for('main.deck') }}" class="btn btn-secondary mt-3">Back to Deck</a>
+{% endblock %}
