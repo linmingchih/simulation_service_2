@@ -411,7 +411,7 @@ def run_step(flow_id, step, job_id):
                 return redirect(url_for('main.deck'))
 
     output_dir = os.path.join(job_path, 'output')
-    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_06':
+    if flow_id == 'Flow_SIwave_SYZ' and step == 'step_07':
         edb_dir = os.path.join(output_dir, 'design.aedb')
         zip_path = os.path.join(output_dir, 'design.aedb.zip')
         if os.path.isdir(edb_dir) and not os.path.isfile(zip_path):
@@ -582,6 +582,22 @@ def run_step(flow_id, step, job_id):
             except Exception:
                 nets = []
     elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_06':
+        nets = defaultdict(list)
+        edb_dir = os.path.join(output_dir, 'cutout.aedb')
+        if not os.path.isdir(edb_dir):
+            edb_dir = os.path.join(output_dir, 'design.aedb')
+        if os.path.isdir(edb_dir):
+            try:
+                edb = Edb(edb_dir, edbversion=edb_version)
+                for net_name, net_obj in edb.nets.nets.items():
+                    for ref_des, comp in net_obj.components.items():
+                        for pin_name, pin in comp.pins.items():
+                            nets[net_name].append([pin_name, ref_des, comp.part_name])
+                edb.close_edb()
+            except Exception:
+                nets = defaultdict(list)
+        info_lines = []
+    elif flow_id == 'Flow_SIwave_SYZ' and step == 'step_07':
         cutout_zip = 'cutout.zip' if os.path.isfile(os.path.join(output_dir, 'cutout.zip')) else None
         design_zip = 'design.aedb.zip' if os.path.isfile(os.path.join(output_dir, 'design.aedb.zip')) else None
         nets = None
