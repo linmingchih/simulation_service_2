@@ -1,9 +1,37 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h2>{{ flow_name }} - {{ job_topic }} : Step 6 - Completed</h2>
+<h2>{{ flow_name }} - {{ job_topic }} : Step 6 - Set Ports</h2>
 
+<form method="post">
+  {% for net, pins in nets.items() %}
+  <div class="mb-3">
+    <h5>{{ net }}</h5>
+    <div class="ms-3">
+    {% for pin in pins %}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="port_{{ net }}_{{ loop.index0 }}" name="port_{{ net }}_{{ loop.index0 }}">
+        <label class="form-check-label" for="port_{{ net }}_{{ loop.index0 }}">
+          {{ pin[0] }} - {{ pin[1] }} ({{ pin[2] }})
+        </label>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  <button type="submit" name="action" value="apply" class="btn btn-primary" id="apply-btn">Apply</button>
+  <button type="submit" name="action" value="pass" class="btn btn-secondary ms-2" formnovalidate>Pass</button>
+</form>
 
-<p>The output files are available in the Information panel.</p>
-
-<a href="{{ url_for('main.deck') }}" class="btn btn-secondary mt-3">Back to Deck</a>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    const btn = document.getElementById('apply-btn');
+    form.addEventListener('submit', () => {
+      btn.disabled = true;
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-warning');
+      btn.textContent = 'Running...';
+    });
+  });
+</script>
 {% endblock %}
