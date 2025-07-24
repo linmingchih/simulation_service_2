@@ -13,7 +13,8 @@
 		border-width: 1px;
 		border-style: dotted;
 	  }
-	</style>
+        </style>
+        {% block extra_head %}{% endblock %}
     <title>{{ title if title else 'Simulation Service' }}</title>
   </head>
   <body>
