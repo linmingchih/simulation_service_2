@@ -1,4 +1,11 @@
 {% extends 'layout.html' %}
+{% block extra_style %}
+<style>
+body {
+  background-image: repeating-linear-gradient(45deg, #fff176 0, #fff176 20px, #ffeb3b 20px, #ffeb3b 40px);
+}
+</style>
+{% endblock %}
 {% block content %}
 <h2>Login</h2>
 <form method="post">
